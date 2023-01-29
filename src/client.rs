@@ -1,20 +1,24 @@
 use std::time::Duration;
 
-const DEFAULT_ENDPOINT: &str = "https://api.open-meteo.com/v1/";
+const DEFAULT_FORECAST_ENDPOINT: &str = "https://api.open-meteo.com/v1/";
+const DEFAULT_GEOCODING_ENDPOINT: &str = "https://geocoding-api.open-meteo.com/v1/search";
+
 const DEFAULT_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 const DEFAULT_TIMEOUT: Duration = Duration::from_millis(5000);
 const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_millis(2000);
 
 #[derive(Default, Debug)]
 pub struct Client {
-    pub endpoint: String,
+    pub forecast_endpoint: String,
+    pub geocoding_endpoint: String,
     pub http_client: reqwest::Client,
 }
 
 impl Client {
     pub fn new() -> Client {
         let mut clt = Client::default();
-        clt.endpoint = DEFAULT_ENDPOINT.into();
+        clt.forecast_endpoint = DEFAULT_FORECAST_ENDPOINT.into();
+        clt.geocoding_endpoint = DEFAULT_GEOCODING_ENDPOINT.into();
 
         clt.http_client = reqwest::Client::builder()
             .timeout(DEFAULT_TIMEOUT)
@@ -26,8 +30,13 @@ impl Client {
         clt
     }
 
-    pub fn with_endpoint(mut self, endpoint: String) -> Client {
-        self.endpoint = endpoint;
+    pub fn with_forecast_endpoint(mut self, endpoint: String) -> Client {
+        self.forecast_endpoint = endpoint;
+        self
+    }
+
+    pub fn with_geowoding_endpoint(mut self, endpoint: String) -> Client {
+        self.geocoding_endpoint = endpoint;
         self
     }
 
@@ -44,13 +53,13 @@ mod tests {
     #[test]
     fn has_correct_default() {
         let clt = Client::new();
-        assert_eq!(clt.endpoint, DEFAULT_ENDPOINT);
+        assert_eq!(clt.forecast_endpoint, DEFAULT_FORECAST_ENDPOINT);
     }
 
     #[test]
-    fn set_endpoint() {
+    fn set_forecast_endpoint() {
         let endpoint = String::from("http://some.where");
-        let clt = Client::new().with_endpoint(endpoint.clone());
-        assert_eq!(clt.endpoint, endpoint);
+        let clt = Client::new().with_forecast_endpoint(endpoint.clone());
+        assert_eq!(clt.forecast_endpoint, endpoint);
     }
 }

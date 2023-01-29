@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-use std::error::Error;
-
 use super::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::error::Error;
 
 #[derive(Debug, Clone)]
 pub struct Options {
@@ -134,7 +133,7 @@ pub struct CurrentWeather {
 
 impl client::Client {
     pub async fn forecast(&self, opts: Options) -> Result<ForecastResponse, Box<dyn Error>> {
-        let mut forecast_endpoint = self.endpoint.to_owned();
+        let mut forecast_endpoint = self.forecast_endpoint.to_owned();
         forecast_endpoint.push_str("/forecast");
         // forecast_endpoint.push_str("/foecast");
         let url = reqwest::Url::parse_with_params(&forecast_endpoint, opts.as_params())?;

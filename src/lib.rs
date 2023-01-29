@@ -6,6 +6,7 @@ mod errors;
 mod location;
 
 pub mod forecast;
+pub mod geocoding;
 
 pub use client::*;
 pub use errors::*;
