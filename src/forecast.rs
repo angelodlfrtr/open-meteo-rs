@@ -372,11 +372,11 @@ impl client::Client {
             result.current_weather = api_res.current_weather;
 
             // Get utc offset
-            let utc_offset_seconds = api_res.utc_offset_seconds.unwrap();
+            let utc_offset_seconds = api_res.utc_offset_seconds.unwrap_or(0);
 
             // Hourly
             if let Some(hourly) = api_res.hourly {
-                if let Some(hourly_date_times) = extract_times(&hourly, utc_offset_seconds) {
+                if let Some(hourly_date_times) = extract_times(&hourly, utc_offset_seconds)? {
                     if let Some(hourly_units) = api_res.hourly_units {
                         let mut hourly_result = Vec::new();
 
@@ -392,7 +392,13 @@ impl client::Client {
                                 }
 
                                 let mut item = ForecastResultItem::default();
-                                let v_arr = v.as_array().unwrap();
+                                let v_arr = match v.as_array() {
+                                    Some(v) => v,
+                                    None => {
+                                        return Err("cannot decode properly json input".into());
+                                    }
+                                };
+
                                 let v_val = v_arr[idx].clone();
                                 item.value = v_val;
 
@@ -419,7 +425,7 @@ impl client::Client {
 
             // Daily
             if let Some(daily) = api_res.daily {
-                if let Some(daily_date_times) = extract_times(&daily, utc_offset_seconds) {
+                if let Some(daily_date_times) = extract_times(&daily, utc_offset_seconds)? {
                     if let Some(daily_units) = api_res.daily_units {
                         let mut daily_result = Vec::new();
 
@@ -435,7 +441,12 @@ impl client::Client {
                                 }
 
                                 let mut item = ForecastResultItem::default();
-                                let v_arr = v.as_array().unwrap();
+                                let v_arr = match v.as_array() {
+                                    Some(v) => v,
+                                    None => {
+                                        return Err("cannot decode properly json input".into());
+                                    }
+                                };
                                 let v_val = v_arr[idx].clone();
                                 item.value = v_val;
 
@@ -473,27 +484,32 @@ impl client::Client {
 fn extract_times(
     input: &HashMap<String, serde_json::Value>,
     utc_offset_seconds: u64,
-) -> Option<Vec<chrono::NaiveDateTime>> {
-    match input.get("time") {
-        Some(time) => match time.as_array() {
-            Some(time_values) => {
-                let hourly_datetimes: Vec<_> = time_values
-                    .into_iter()
-                    .map(|v| {
-                        let unix_tm = v.as_u64().unwrap();
-                        chrono::Utc
-                            .timestamp_millis_opt(((unix_tm + utc_offset_seconds) * 1000) as i64)
-                            .unwrap()
-                            .naive_local()
-                    })
-                    .collect();
+) -> Result<Option<Vec<chrono::NaiveDateTime>>, Box<dyn Error>> {
+    if let Some(time) = input.get("time") {
+        if let Some(time_values) = time.as_array() {
+            let mut hourly_datetimes = Vec::new();
 
-                Some(hourly_datetimes)
+            for v in time_values.iter() {
+                let unix_tm = match v.as_u64() {
+                    Some(v) => v,
+                    None => {
+                        return Err("cannot decode properly json input".into());
+                    }
+                };
+
+                let dd = chrono::Utc
+                    .timestamp_millis_opt(((unix_tm + utc_offset_seconds) * 1000) as i64)
+                    .unwrap()
+                    .naive_local();
+
+                hourly_datetimes.push(dd);
             }
-            None => None,
-        },
-        None => None,
+
+            return Ok(Some(hourly_datetimes));
+        }
     }
+
+    Ok(None)
 }
 
 #[cfg(test)]
