@@ -1,6 +1,6 @@
 [package]
 name = "open-meteo-rs"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 description = "HTTP client for open-meteo.com api"
 homepage = "https://github.com/angelodlfrtr/open-meteo-rs"
