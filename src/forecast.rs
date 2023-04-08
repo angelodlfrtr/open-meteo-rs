@@ -203,10 +203,10 @@ pub struct Options {
     pub time_zone: Option<String>,
     pub past_days: Option<u8>,
     pub forecast_days: Option<u8>,
-    pub start_date: Option<String>,
-    pub end_date: Option<String>,
+    pub start_date: Option<chrono::NaiveDate>,
+    pub end_date: Option<chrono::NaiveDate>,
     pub models: Option<Vec<String>>,
-    pub cell_selection: Option<String>,
+    pub cell_selection: Option<CellSelection>,
 }
 
 impl Default for Options {
@@ -275,12 +275,12 @@ impl Options {
         }
 
         match self.start_date {
-            Some(v) => params.push(("start_date".into(), v)),
+            Some(v) => params.push(("start_date".into(), v.format("%Y-%m-%d").to_string())),
             None => (),
         }
 
         match self.end_date {
-            Some(v) => params.push(("end_date".into(), v)),
+            Some(v) => params.push(("end_date".into(), v.format("%Y-%m-%d").to_string())),
             None => (),
         }
 
@@ -351,7 +351,6 @@ pub struct ForecastResultDaily {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ForecastResult {
-    pub location: Option<Location>,
     pub current_weather: Option<CurrentWeather>,
     pub hourly: Option<Vec<ForecastResultHourly>>,
     pub daily: Option<Vec<ForecastResultDaily>>,
@@ -515,6 +514,7 @@ fn extract_times(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::Duration;
     use futures::join;
 
     #[tokio::test]
@@ -530,8 +530,12 @@ mod tests {
 
         opts.hourly.push("temperature_2m".into());
         opts.hourly.push("windspeed_120m".into());
-        // opts.daily.push("temperature_2m_max".into());
+        opts.daily.push("temperature_2m_max".into());
+        opts.daily.push("shortwave_radiation_sum".into());
         opts.time_zone = Some(chrono_tz::Tz::Europe__Paris.to_string());
+
+        opts.start_date = Some(chrono::Utc::now().date_naive());
+        opts.end_date = Some((chrono::Utc::now() + Duration::days(4)).date_naive());
 
         let res = clt.forecast(opts).await.unwrap();
         println!("{:#?}", res);
