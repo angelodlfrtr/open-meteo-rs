@@ -61,12 +61,12 @@ impl Options {
         }
 
         match self.time_format {
-            Some(v) => params.push(("time_format".into(), v)),
+            Some(v) => params.push(("timeformat".into(), v)),
             None => (),
         }
 
         match self.time_zone {
-            Some(v) => params.push(("time_zone".into(), v)),
+            Some(v) => params.push(("timezone".into(), v)),
             None => (),
         }
 
@@ -165,6 +165,7 @@ mod tests {
             lng: 2.349014,
         };
         opts.hourly.push("temperature_2m".into());
+        opts.daily.push("temperature_2m_max".into());
 
         let res = clt.forecast(opts).await.unwrap();
         println!("{:?}", res);
