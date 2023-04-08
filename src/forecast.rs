@@ -375,107 +375,89 @@ impl client::Client {
             let utc_offset_seconds = api_res.utc_offset_seconds.unwrap();
 
             // Hourly
-            match api_res.hourly {
-                Some(hourly) => {
-                    match extract_times(&hourly, utc_offset_seconds) {
-                        Some(hourly_date_times) => {
-                            match api_res.hourly_units {
-                                Some(hourly_units) => {
-                                    let mut hourly_result = Vec::new();
+            if let Some(hourly) = api_res.hourly {
+                if let Some(hourly_date_times) = extract_times(&hourly, utc_offset_seconds) {
+                    if let Some(hourly_units) = api_res.hourly_units {
+                        let mut hourly_result = Vec::new();
 
-                                    // Iterate on times
-                                    for (idx, time) in hourly_date_times.iter().enumerate() {
-                                        let mut hourly_rec = ForecastResultHourly::default();
-                                        hourly_rec.datetime = *time;
+                        // Iterate on times
+                        for (idx, time) in hourly_date_times.iter().enumerate() {
+                            let mut hourly_rec = ForecastResultHourly::default();
+                            hourly_rec.datetime = *time;
 
-                                        // Iterates on values
-                                        for (k, v) in hourly.iter() {
-                                            if k == "time" {
-                                                continue;
-                                            }
-
-                                            let mut item = ForecastResultItem::default();
-                                            let v_arr = v.as_array().unwrap();
-                                            let v_val = v_arr[idx].clone();
-                                            item.value = v_val;
-
-                                            // Try to find unit
-                                            match hourly_units.get(k) {
-                                                Some(unit) => {
-                                                    item.unit = Some(unit.clone());
-                                                }
-                                                None => (),
-                                            }
-
-                                            // Push to hourly record
-                                            hourly_rec.values.insert(k.clone(), item);
-                                        }
-
-                                        // Push hourly rec
-                                        hourly_result.push(hourly_rec);
-                                    }
-
-                                    result.hourly = Some(hourly_result);
+                            // Iterates on values
+                            for (k, v) in hourly.iter() {
+                                if k == "time" {
+                                    continue;
                                 }
-                                None => (),
+
+                                let mut item = ForecastResultItem::default();
+                                let v_arr = v.as_array().unwrap();
+                                let v_val = v_arr[idx].clone();
+                                item.value = v_val;
+
+                                // Try to find unit
+                                match hourly_units.get(k) {
+                                    Some(unit) => {
+                                        item.unit = Some(unit.clone());
+                                    }
+                                    None => (),
+                                }
+
+                                // Push to hourly record
+                                hourly_rec.values.insert(k.clone(), item);
                             }
+
+                            // Push hourly rec
+                            hourly_result.push(hourly_rec);
                         }
-                        None => (),
+
+                        result.hourly = Some(hourly_result);
                     }
                 }
-                None => (),
             }
 
             // Daily
-            match api_res.daily {
-                Some(daily) => {
-                    match extract_times(&daily, utc_offset_seconds) {
-                        Some(daily_date_times) => {
-                            match api_res.daily_units {
-                                Some(daily_units) => {
-                                    let mut daily_result = Vec::new();
+            if let Some(daily) = api_res.daily {
+                if let Some(daily_date_times) = extract_times(&daily, utc_offset_seconds) {
+                    if let Some(daily_units) = api_res.daily_units {
+                        let mut daily_result = Vec::new();
 
-                                    // Iterate on times
-                                    for (idx, time) in daily_date_times.iter().enumerate() {
-                                        let mut daily_rec = ForecastResultDaily::default();
-                                        daily_rec.date = (*time).date();
+                        // Iterate on times
+                        for (idx, time) in daily_date_times.iter().enumerate() {
+                            let mut daily_rec = ForecastResultDaily::default();
+                            daily_rec.date = (*time).date();
 
-                                        // Iterates on values
-                                        for (k, v) in daily.iter() {
-                                            if k == "time" {
-                                                continue;
-                                            }
-
-                                            let mut item = ForecastResultItem::default();
-                                            let v_arr = v.as_array().unwrap();
-                                            let v_val = v_arr[idx].clone();
-                                            item.value = v_val;
-
-                                            // Try to find unit
-                                            match daily_units.get(k) {
-                                                Some(unit) => {
-                                                    item.unit = Some(unit.clone());
-                                                }
-                                                None => (),
-                                            }
-
-                                            // Push to daily record
-                                            daily_rec.values.insert(k.clone(), item);
-                                        }
-
-                                        // Push daily rec
-                                        daily_result.push(daily_rec);
-                                    }
-
-                                    result.daily = Some(daily_result);
+                            // Iterates on values
+                            for (k, v) in daily.iter() {
+                                if k == "time" {
+                                    continue;
                                 }
-                                None => (),
+
+                                let mut item = ForecastResultItem::default();
+                                let v_arr = v.as_array().unwrap();
+                                let v_val = v_arr[idx].clone();
+                                item.value = v_val;
+
+                                // Try to find unit
+                                match daily_units.get(k) {
+                                    Some(unit) => {
+                                        item.unit = Some(unit.clone());
+                                    }
+                                    None => (),
+                                }
+
+                                // Push to daily record
+                                daily_rec.values.insert(k.clone(), item);
                             }
+
+                            // Push daily rec
+                            daily_result.push(daily_rec);
                         }
-                        None => (),
+
+                        result.daily = Some(daily_result);
                     }
                 }
-                None => (),
             }
 
             return Ok(result);
