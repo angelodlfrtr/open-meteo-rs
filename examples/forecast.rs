@@ -1,19 +1,3 @@
-# open-meteo-rs
-
-A simple rust client for https://open-meteo.com/ API. It support the `forecast` endpoint.
-
-- Crates.io: https://crates.io/crates/open-meteo-rs
-- Docs.rs : https://docs.rs/open-meteo-rs/
-
-## Installation
-
-```sh
-cargo add open-meteo-rs
-```
-
-## Usage
-
-```rust
 extern crate open_meteo_rs;
 
 #[tokio::main]
@@ -99,4 +83,3 @@ async fn main() {
 
     println!("{:#?}", res);
 }
-```

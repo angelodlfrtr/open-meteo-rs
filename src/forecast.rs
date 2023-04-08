@@ -68,11 +68,11 @@ impl From<TemperatureUnit> for String {
     }
 }
 
-impl TryFrom<String> for TemperatureUnit {
+impl TryFrom<&str> for TemperatureUnit {
     type Error = String;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        match value.as_str() {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
             "celsius" => Ok(Self::Celsius),
             "fahrenheit" => Ok(Self::Fahrenheit),
             _ => Err(format!("invalid temperature unit {:?}", value)),
@@ -106,11 +106,11 @@ impl From<WindSpeedUnit> for String {
     }
 }
 
-impl TryFrom<String> for WindSpeedUnit {
+impl TryFrom<&str> for WindSpeedUnit {
     type Error = String;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        match value.as_str() {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
             "kmh" => Ok(Self::Kmh),
             "ms" => Ok(Self::Ms),
             "mph" => Ok(Self::Mph),
@@ -142,11 +142,11 @@ impl From<PrecipitationUnit> for String {
     }
 }
 
-impl TryFrom<String> for PrecipitationUnit {
+impl TryFrom<&str> for PrecipitationUnit {
     type Error = String;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        match value.as_str() {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
             "inch" => Ok(Self::Inches),
             "mm" => Ok(Self::Millimeters),
             _ => Err(format!("invalid precicitation unit {:?}", value)),
@@ -177,11 +177,11 @@ impl From<CellSelection> for String {
     }
 }
 
-impl TryFrom<String> for CellSelection {
+impl TryFrom<&str> for CellSelection {
     type Error = String;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        match value.as_str() {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
             "land" => Ok(Self::Land),
             "sea" => Ok(Self::Sea),
             "nearest" => Ok(Self::Nearest),
@@ -301,6 +301,17 @@ impl Options {
             params.push(("daily".into(), self.daily.join(",")));
         }
 
+        if let Some(models) = self.models {
+            if models.len() > 0 {
+                params.push(("models".into(), models.join(",")));
+            }
+        }
+
+        match self.cell_selection {
+            Some(v) => params.push(("cell_selection".into(), v.into())),
+            None => (),
+        }
+
         params
     }
 }
@@ -312,7 +323,7 @@ pub struct CurrentWeather {
     pub winddirection: Option<f64>,
     pub weathercode: Option<f64>,
     pub is_day: Option<u8>,
-    pub time: Option<String>,
+    pub time: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -525,8 +536,9 @@ mod tests {
             lat: 52.52,
             lng: 13.41,
         };
+        opts.current_weather = Some(true);
         opts.elevation = Some("nan".try_into().unwrap());
-        // opts.elevation = Some(8.65.into());
+        opts.elevation = Some(8.65.into());
 
         opts.hourly.push("temperature_2m".into());
         opts.hourly.push("windspeed_120m".into());
