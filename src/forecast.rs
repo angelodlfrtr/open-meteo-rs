@@ -332,7 +332,7 @@ struct ApiForecastResponse {
     pub longitude: Option<f64>,
     pub elevation: Option<f32>,
     pub generationtime_ms: Option<f64>,
-    pub utc_offset_seconds: Option<u64>,
+    pub utc_offset_seconds: Option<i32>,
     pub timezone: Option<String>,
     pub timezone_abbreviation: Option<String>,
     pub current_weather: Option<CurrentWeather>,
@@ -493,14 +493,14 @@ impl client::Client {
 
 fn extract_times(
     input: &HashMap<String, serde_json::Value>,
-    utc_offset_seconds: u64,
+    utc_offset_seconds: i32,
 ) -> Result<Option<Vec<chrono::NaiveDateTime>>, Box<dyn Error>> {
     if let Some(time) = input.get("time") {
         if let Some(time_values) = time.as_array() {
             let mut hourly_datetimes = Vec::new();
 
             for v in time_values.iter() {
-                let unix_tm = match v.as_u64() {
+                let unix_tm = match v.as_i64() {
                     Some(v) => v,
                     None => {
                         return Err("cannot decode properly json input".into());
@@ -508,7 +508,7 @@ fn extract_times(
                 };
 
                 let dd = chrono::Utc
-                    .timestamp_millis_opt(((unix_tm + utc_offset_seconds) * 1000) as i64)
+                    .timestamp_millis_opt((unix_tm + utc_offset_seconds as i64) * 1000)
                     .unwrap()
                     .naive_local();
 
