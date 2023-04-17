@@ -250,7 +250,7 @@ impl Options {
         }
 
         match self.wind_speed_unit {
-            Some(v) => params.push(("wind_speed_unit".into(), v.into())),
+            Some(v) => params.push(("windspeed_unit".into(), v.into())),
             None => (),
         }
 
