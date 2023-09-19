@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 const DEFAULT_FORECAST_ENDPOINT: &str = "https://api.open-meteo.com/v1/";
+const DEFAULT_ARCHIVE_ENDPOINT: &str = "https://archive-api.open-meteo.com/v1/";
 const DEFAULT_GEOCODING_ENDPOINT: &str = "https://geocoding-api.open-meteo.com/v1/search";
 
 const DEFAULT_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -9,8 +10,10 @@ const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_millis(2000);
 
 #[derive(Debug)]
 pub struct Client {
-    /// API endpoint
+    /// Forecast API URL
     pub forecast_endpoint: String,
+    /// Archive API URL
+    pub archive_endpoint: String,
     pub geocoding_endpoint: String,
     pub http_client: reqwest::Client,
 }
@@ -18,8 +21,9 @@ pub struct Client {
 impl Default for Client {
     fn default() -> Self {
         Self {
-            forecast_endpoint: DEFAULT_FORECAST_ENDPOINT.into(),
-            geocoding_endpoint: DEFAULT_GEOCODING_ENDPOINT.into(),
+            forecast_endpoint: DEFAULT_FORECAST_ENDPOINT.to_string(),
+            archive_endpoint: DEFAULT_ARCHIVE_ENDPOINT.to_string(),
+            geocoding_endpoint: DEFAULT_GEOCODING_ENDPOINT.to_string(),
             http_client: reqwest::Client::builder()
                 .timeout(DEFAULT_TIMEOUT)
                 .connect_timeout(DEFAULT_CONNECT_TIMEOUT)
@@ -43,7 +47,7 @@ impl Client {
     #[deprecated(
         note = "this method contains a typo; please use `with_geocoding_endpoint` instead"
     )]
-    pub fn with_geowoding_endpoint(mut self, endpoint: String) -> Client {
+    pub fn with_geowoding_endpoint(self, endpoint: String) -> Client {
         self.with_geocoding_endpoint(endpoint)
     }
 
