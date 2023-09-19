@@ -9,6 +9,7 @@ const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_millis(2000);
 
 #[derive(Default, Debug)]
 pub struct Client {
+    /// API endpoint
     pub forecast_endpoint: String,
     pub geocoding_endpoint: String,
     pub http_client: reqwest::Client,
@@ -35,7 +36,12 @@ impl Client {
         self
     }
 
+    #[deprecated(note="this method contains a typo; please use `with_geocoding_endpoint` instead")]
     pub fn with_geowoding_endpoint(mut self, endpoint: String) -> Client {
+        self.with_geocoding_endpoint(endpoint)
+    }
+
+    pub fn with_geocoding_endpoint(mut self, endpoint: String) -> Client {
         self.geocoding_endpoint = endpoint;
         self
     }
