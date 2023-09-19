@@ -194,7 +194,9 @@ impl TryFrom<&str> for CellSelection {
 pub struct Options {
     pub location: location::Location,
     pub elevation: Option<Elevation>,
+    /// Attributes to request in hourly intervals
     pub hourly: Vec<String>,
+    /// Attributes to request in daily intervals
     pub daily: Vec<String>,
     pub current_weather: Option<bool>,
     pub temperature_unit: Option<TemperatureUnit>,
@@ -368,10 +370,24 @@ pub struct ForecastResult {
 }
 
 impl client::Client {
+    /// Request forecast data
     pub async fn forecast(&self, opts: Options) -> Result<ForecastResult, Box<dyn Error>> {
-        let mut forecast_endpoint = self.forecast_endpoint.to_owned();
-        forecast_endpoint.push_str("/forecast");
-        let url = reqwest::Url::parse_with_params(&forecast_endpoint, opts.as_params())?;
+        self.request(opts, &format!("{}forecast", self.forecast_endpoint))
+            .await
+    }
+
+    /// Request data from the archive (historic weather data)
+    pub async fn archive(&self, opts: Options) -> Result<ForecastResult, Box<dyn Error>> {
+        self.request(opts, &format!("{}archive", self.archive_endpoint))
+            .await
+    }
+
+    async fn request(
+        &self,
+        opts: Options,
+        api_endpoint: &str,
+    ) -> Result<ForecastResult, Box<dyn Error>> {
+        let url = reqwest::Url::parse_with_params(&api_endpoint, opts.as_params())?;
         let res = self.http_client.get(url).send().await?;
 
         if res.status().is_success() {
