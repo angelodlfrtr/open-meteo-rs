@@ -198,7 +198,8 @@ pub struct Options {
     pub hourly: Vec<String>,
     /// Attributes to request in daily intervals
     pub daily: Vec<String>,
-    pub current_weather: Option<bool>,
+    /// Attributes to request for current weather
+    pub current: Vec<String>,
     pub temperature_unit: Option<TemperatureUnit>,
     pub wind_speed_unit: Option<WindSpeedUnit>,
     pub precipitation_unit: Option<PrecipitationUnit>,
@@ -218,7 +219,7 @@ impl Default for Options {
             elevation: None,
             hourly: Vec::new(),
             daily: Vec::new(),
-            current_weather: None,
+            current: Vec::new(),
             temperature_unit: None,
             wind_speed_unit: None,
             precipitation_unit: None,
@@ -286,15 +287,9 @@ impl Options {
             None => (),
         }
 
-        match self.current_weather {
-            Some(v) => {
-                if v {
-                    params.push(("current_weather".into(), "true".into()))
-                }
-            }
-            None => (),
+        if !self.current.is_empty() {
+            params.push(("current".into(), self.current.join(",")));
         }
-
         if self.hourly.len() > 0 {
             params.push(("hourly".into(), self.hourly.join(",")));
         }
@@ -319,16 +314,6 @@ impl Options {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CurrentWeather {
-    pub temperature: Option<f64>,
-    pub windspeed: Option<f64>,
-    pub winddirection: Option<f64>,
-    pub weathercode: Option<f64>,
-    pub is_day: Option<u8>,
-    pub time: Option<u64>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 struct ApiForecastResponse {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
@@ -337,7 +322,8 @@ struct ApiForecastResponse {
     pub utc_offset_seconds: Option<i32>,
     pub timezone: Option<String>,
     pub timezone_abbreviation: Option<String>,
-    pub current_weather: Option<CurrentWeather>,
+    pub current_units: Option<HashMap<String, String>>,
+    pub current: Option<HashMap<String, serde_json::Value>>,
     pub hourly_units: Option<HashMap<String, String>>,
     pub hourly: Option<HashMap<String, serde_json::Value>>,
     pub daily_units: Option<HashMap<String, String>>,
@@ -356,6 +342,8 @@ pub struct ForecastResultHourly {
     pub values: HashMap<String, ForecastResultItem>,
 }
 
+type CurrentResult = ForecastResultHourly;
+
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ForecastResultDaily {
     pub date: chrono::NaiveDate,
@@ -364,7 +352,7 @@ pub struct ForecastResultDaily {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ForecastResult {
-    pub current_weather: Option<CurrentWeather>,
+    pub current: Option<CurrentResult>,
     pub hourly: Option<Vec<ForecastResultHourly>>,
     pub daily: Option<Vec<ForecastResultDaily>>,
 }
@@ -395,7 +383,31 @@ impl client::Client {
             let mut result = ForecastResult::default();
 
             // Current weather
-            result.current_weather = api_res.current_weather;
+            if let Some(current) = api_res.current {
+                let api_units = api_res.current_units.clone();
+                // Iterates on values
+                let mut current_result = CurrentResult::default();
+                for (k, v) in current.iter() {
+                    if k == "time" {
+                        current_result.datetime = match v.as_i64() {
+                            Some(v) => unix_time_to_naive_datetime(v, 0),
+                            None => {
+                                return Err("cannot decode properly json input".into());
+                            }
+                        };
+                        continue;
+                    }
+                    // Try to find the unit
+                    let unit = api_units.as_ref().and_then(|units| units.get(k).cloned());
+                    let value = v.clone();
+                    current_result
+                        .values
+                        .insert(k.clone(), ForecastResultItem { unit, value });
+                }
+
+                // Push current rec
+                result.current = Some(current_result);
+            }
 
             // Get utc offset
             let utc_offset_seconds = api_res.utc_offset_seconds.unwrap_or(0);
@@ -507,6 +519,13 @@ impl client::Client {
     }
 }
 
+fn unix_time_to_naive_datetime(unix_time: i64, utc_offset_seconds: i32) -> chrono::NaiveDateTime {
+    chrono::Utc
+        .timestamp_millis_opt((unix_time + utc_offset_seconds as i64) * 1000)
+        .unwrap()
+        .naive_local()
+}
+
 fn extract_times(
     input: &HashMap<String, serde_json::Value>,
     utc_offset_seconds: i32,
@@ -523,10 +542,7 @@ fn extract_times(
                     }
                 };
 
-                let dd = chrono::Utc
-                    .timestamp_millis_opt((unix_tm + utc_offset_seconds as i64) * 1000)
-                    .unwrap()
-                    .naive_local();
+                let dd = unix_time_to_naive_datetime(unix_tm, utc_offset_seconds);
 
                 hourly_datetimes.push(dd);
             }
@@ -552,7 +568,7 @@ mod tests {
             lat: 52.52,
             lng: 13.41,
         };
-        opts.current_weather = Some(true);
+        opts.current = vec!["temperature_2m".into()];
         opts.elevation = Some("nan".try_into().unwrap());
         opts.elevation = Some(8.65.into());
 
