@@ -342,7 +342,7 @@ pub struct ForecastResultHourly {
     pub values: HashMap<String, ForecastResultItem>,
 }
 
-type CurrentResult = ForecastResultHourly;
+pub type CurrentResult = ForecastResultHourly;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ForecastResultDaily {
@@ -519,14 +519,17 @@ impl client::Client {
     }
 }
 
-fn unix_time_to_naive_datetime(unix_time: i64, utc_offset_seconds: i32) -> chrono::NaiveDateTime {
+pub fn unix_time_to_naive_datetime(
+    unix_time: i64,
+    utc_offset_seconds: i32,
+) -> chrono::NaiveDateTime {
     chrono::Utc
         .timestamp_millis_opt((unix_time + utc_offset_seconds as i64) * 1000)
         .unwrap()
         .naive_local()
 }
 
-fn extract_times(
+pub fn extract_times(
     input: &HashMap<String, serde_json::Value>,
     utc_offset_seconds: i32,
 ) -> Result<Option<Vec<chrono::NaiveDateTime>>, Box<dyn Error>> {
