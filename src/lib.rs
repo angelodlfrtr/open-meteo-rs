@@ -5,6 +5,7 @@ mod client;
 mod errors;
 mod location;
 
+pub mod air_quality;
 pub mod forecast;
 pub mod geocoding;
 

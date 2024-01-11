@@ -3,6 +3,7 @@ use std::time::Duration;
 const DEFAULT_FORECAST_ENDPOINT: &str = "https://api.open-meteo.com/v1/";
 const DEFAULT_ARCHIVE_ENDPOINT: &str = "https://archive-api.open-meteo.com/v1/";
 const DEFAULT_GEOCODING_ENDPOINT: &str = "https://geocoding-api.open-meteo.com/v1/search";
+const DEFAULT_AIR_QUALITY_ENDPOINT: &str = "https://air-quality-api.open-meteo.com/v1/air-quality";
 
 const DEFAULT_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 const DEFAULT_TIMEOUT: Duration = Duration::from_millis(5000);
@@ -15,6 +16,7 @@ pub struct Client {
     /// Archive API URL
     pub archive_endpoint: String,
     pub geocoding_endpoint: String,
+    pub air_quality_endpoint: String,
     pub http_client: reqwest::Client,
 }
 
@@ -24,6 +26,7 @@ impl Default for Client {
             forecast_endpoint: DEFAULT_FORECAST_ENDPOINT.to_string(),
             archive_endpoint: DEFAULT_ARCHIVE_ENDPOINT.to_string(),
             geocoding_endpoint: DEFAULT_GEOCODING_ENDPOINT.to_string(),
+            air_quality_endpoint: DEFAULT_AIR_QUALITY_ENDPOINT.to_string(),
             http_client: reqwest::Client::builder()
                 .timeout(DEFAULT_TIMEOUT)
                 .connect_timeout(DEFAULT_CONNECT_TIMEOUT)

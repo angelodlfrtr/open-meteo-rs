@@ -1,9 +1,9 @@
 # open-meteo-rs
 
-A simple rust client for https://open-meteo.com/ API. It support the `forecast` endpoint.
+A simple rust client for <https://open-meteo.com/> API. It support the `forecast` endpoint.
 
-- Crates.io: https://crates.io/crates/open-meteo-rs
-- Docs.rs : https://docs.rs/open-meteo-rs/
+- Crates.io: <https://crates.io/crates/open-meteo-rs>
+- Docs.rs : <https://docs.rs/open-meteo-rs/>
 
 ## Installation
 
@@ -32,9 +32,6 @@ async fn main() {
     opts.elevation = Some(open_meteo_rs::forecast::Elevation::Value(150.9)); // or
     opts.elevation = Some("nan".try_into().unwrap()); // or
     opts.elevation = Some(150.9.into());
-
-    // Current weather
-    opts.current_weather = Some(true);
 
     // Temperature unit
     opts.temperature_unit = Some(open_meteo_rs::forecast::TemperatureUnit::Fahrenheit); // or
@@ -85,6 +82,9 @@ async fn main() {
     opts.cell_selection = Some("land".try_into().unwrap()); // or
     opts.cell_selection = Some("sea".try_into().unwrap()); // or
     opts.cell_selection = Some("nearest".try_into().unwrap());
+
+    // Current weather
+    opts.current.push("temperature_2m".into());
 
     // Hourly parameters
     opts.hourly.push("temperature_2m".into());

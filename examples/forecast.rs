@@ -17,9 +17,6 @@ async fn main() {
     opts.elevation = Some("nan".try_into().unwrap()); // or
     opts.elevation = Some(150.9.into());
 
-    // Current weather
-    opts.current_weather = Some(true);
-
     // Temperature unit
     opts.temperature_unit = Some(open_meteo_rs::forecast::TemperatureUnit::Fahrenheit); // or
     opts.temperature_unit = Some(open_meteo_rs::forecast::TemperatureUnit::Celsius); // or
@@ -69,6 +66,10 @@ async fn main() {
     opts.cell_selection = Some("land".try_into().unwrap()); // or
     opts.cell_selection = Some("sea".try_into().unwrap()); // or
     opts.cell_selection = Some("nearest".try_into().unwrap());
+
+    // Current weather
+    opts.current.push("temperature_2m".into());
+    opts.current.push("is_day".into());
 
     // Hourly parameters
     opts.hourly.push("temperature_2m".into());
