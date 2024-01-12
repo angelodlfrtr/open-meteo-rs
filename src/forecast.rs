@@ -210,6 +210,7 @@ pub struct Options {
     pub end_date: Option<chrono::NaiveDate>,
     pub models: Option<Vec<String>>,
     pub cell_selection: Option<CellSelection>,
+    pub apikey: Option<String>,
 }
 
 impl Default for Options {
@@ -230,6 +231,7 @@ impl Default for Options {
             end_date: None,
             models: None,
             cell_selection: None,
+            apikey: None,
         }
     }
 }
@@ -307,6 +309,10 @@ impl Options {
         match self.cell_selection {
             Some(v) => params.push(("cell_selection".into(), v.into())),
             None => (),
+        }
+
+        if let Some(apikey) = self.apikey {
+            params.push(("apikey".into(), apikey.to_string()));
         }
 
         params
