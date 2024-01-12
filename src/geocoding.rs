@@ -7,6 +7,7 @@ pub struct Options {
     pub name: Option<String>,
     pub language: Option<String>,
     pub count: Option<u16>,
+    pub apikey: Option<String>,
 }
 
 impl Options {
@@ -41,6 +42,10 @@ impl Options {
         match self.count {
             Some(v) => params.push(("count".into(), v.to_string())),
             None => (),
+        }
+
+        if let Some(apikey) = self.apikey {
+            params.push(("apikey".into(), apikey.to_string()));
         }
 
         params
