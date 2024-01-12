@@ -42,6 +42,21 @@ impl Client {
         Self::default()
     }
 
+    pub fn with_endpoints(
+        forecast_endpoint: &str,
+        archive_endpoint: &str,
+        geocoding_endpoint: &str,
+        air_quality_endpoint: &str,
+    ) -> Client {
+        Self {
+            forecast_endpoint: forecast_endpoint.to_string(),
+            archive_endpoint: archive_endpoint.to_string(),
+            geocoding_endpoint: geocoding_endpoint.to_string(),
+            air_quality_endpoint: air_quality_endpoint.to_string(),
+            ..Default::default()
+        }
+    }
+
     pub fn with_forecast_endpoint(mut self, endpoint: String) -> Client {
         self.forecast_endpoint = endpoint;
         self
