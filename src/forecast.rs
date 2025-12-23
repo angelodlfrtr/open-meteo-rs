@@ -201,7 +201,7 @@ impl TryFrom<&str> for CellSelection {
 pub struct Options {
     pub location: location::Location,
     pub elevation: Option<Elevation>,
-    /// Attributes to request for minutely_15 forecast
+    /// Attributes to request for `minutely_15` forecast
     pub minutely_15: Vec<String>,
     /// Attributes to request in hourly intervals
     pub hourly: Vec<String>,
@@ -281,7 +281,7 @@ impl Options {
         if let Some(v) = self.past_days {
             params.push(("past_days".into(), v.to_string()));
         }
-      
+
         if let Some(v) = self.forecast_minutely_15 {
             params.push(("forecast_minutely_15".into(), v.to_string()));
         }
@@ -401,6 +401,7 @@ impl client::Client {
             .await
     }
 
+    #[allow(clippy::too_many_lines)]
     async fn request(
         &self,
         opts: Options,
@@ -459,17 +460,14 @@ impl client::Client {
                             };
 
                             // Iterates on values
-                            for (k, v) in minutely_15.iter() {
+                            for (k, v) in &minutely_15 {
                                 if k == "time" {
                                     continue;
                                 }
 
                                 let mut item = ForecastResultItem::default();
-                                let v_arr = match v.as_array() {
-                                    Some(v) => v,
-                                    None => {
-                                        return Err("cannot decode properly json input".into());
-                                    }
+                                let Some(v_arr) = v.as_array() else {
+                                    return Err("cannot decode properly json input".into());
                                 };
 
                                 let v_val = v_arr[idx].clone();
