@@ -1,0 +1,19 @@
+name: CI
+on: push
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: nixbuild/nix-quick-install-action@v34
+
+      - name: Run fmt check
+        run: nix develop --command make fmt-check
+
+      - name: Run clippy checks
+        run: nix develop --command make clippy
+
+      - name: Run tests
+        run: nix develop --command make test

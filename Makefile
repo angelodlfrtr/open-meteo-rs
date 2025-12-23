@@ -1,6 +1,6 @@
 .PHONY: clippy
 clippy:
-	cargo clippy --all-targets --all-features
+	cargo clippy
 
 .PHONY: test
 test:
@@ -9,3 +9,7 @@ test:
 .PHONY: fmt
 fmt:
 	dprint fmt
+
+.PHONY: fmt-check
+fmt-check:
+	dprint check

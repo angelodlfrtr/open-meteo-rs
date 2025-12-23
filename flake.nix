@@ -28,6 +28,7 @@
             openssl
             pkg-config
             dprint
+            gnumake
           ];
         };
       }
