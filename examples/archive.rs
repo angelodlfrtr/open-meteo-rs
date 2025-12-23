@@ -1,5 +1,3 @@
-extern crate open_meteo_rs;
-
 use chrono::{TimeZone, Utc};
 
 #[tokio::main]
