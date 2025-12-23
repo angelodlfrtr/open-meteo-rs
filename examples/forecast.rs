@@ -1,4 +1,4 @@
-extern crate open_meteo_rs;
+#![allow(clippy::field_reassign_with_default)]
 
 #[tokio::main]
 async fn main() {

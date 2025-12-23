@@ -14,8 +14,6 @@ cargo add open-meteo-rs
 ## Usage
 
 ```rust
-extern crate open_meteo_rs;
-
 #[tokio::main]
 async fn main() {
     let client = open_meteo_rs::Client::new();

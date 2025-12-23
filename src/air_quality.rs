@@ -29,7 +29,7 @@ pub struct Options {
 }
 
 impl Options {
-    fn to_params(self) -> Vec<(String, String)> {
+    fn into_params(self) -> Vec<(String, String)> {
         let mut params: Vec<(String, String)> = Vec::new();
 
         params.push(("latitude".into(), self.location.lat.to_string()));
@@ -73,7 +73,7 @@ impl Options {
             params.push(("cell_selection".into(), cell_selection.to_string()));
         }
         if let Some(apikey) = self.apikey {
-            params.push(("apikey".into(), apikey.to_string()));
+            params.push(("apikey".into(), apikey.clone()));
         }
 
         params
@@ -108,7 +108,7 @@ fn api_to_result(api_res: ApiAirQualityResponse) -> Result<AirQualityResult, Box
         let api_units = api_res.current_units.clone();
         // Iterates on values
         let mut current_result = CurrentResult::default();
-        for (k, v) in current.iter() {
+        for (k, v) in &current {
             if k == "time" {
                 current_result.datetime = match v.as_i64() {
                     Some(v) => unix_time_to_naive_datetime(v, 0),
@@ -128,7 +128,7 @@ fn api_to_result(api_res: ApiAirQualityResponse) -> Result<AirQualityResult, Box
 
         // Push current rec
         result.current = Some(current_result);
-    };
+    }
 
     let utc_offset_seconds = api_res.utc_offset_seconds.unwrap_or(0);
     if let Some(hourly) = api_res.hourly {
@@ -140,7 +140,7 @@ fn api_to_result(api_res: ApiAirQualityResponse) -> Result<AirQualityResult, Box
             for (idx, time) in hourly_date_times.iter().enumerate() {
                 let mut hourly_rec = ForecastResultHourly::default();
                 // Iterates on values
-                for (k, v) in hourly.iter() {
+                for (k, v) in &hourly {
                     if k == "time" {
                         continue;
                     }
@@ -173,8 +173,12 @@ fn api_to_result(api_res: ApiAirQualityResponse) -> Result<AirQualityResult, Box
 
 impl client::Client {
     /// Request forecast data
+    ///
+    /// ### Errors
+    ///
+    /// Return an `Err` if api call fail or in case of network error.
     pub async fn air_quality(&self, opts: Options) -> Result<AirQualityResult, Box<dyn Error>> {
-        let url = reqwest::Url::parse_with_params(&self.air_quality_endpoint, opts.to_params())?;
+        let url = reqwest::Url::parse_with_params(&self.air_quality_endpoint, opts.into_params())?;
         let res = self.http_client.get(url).send().await?;
 
         if res.status().is_success() {
@@ -184,7 +188,7 @@ impl client::Client {
 
         Err(Box::new(errors::ClientError::InvalidResponseStatus {
             status_code: res.status().as_u16(),
-            text: res.text().await.unwrap_or("".into()),
+            text: res.text().await.unwrap_or(String::new()),
         }))
     }
 }
@@ -212,6 +216,6 @@ mod tests {
         };
 
         let res = clt.air_quality(opts).await.unwrap();
-        println!("{:#?}", res);
+        println!("{res:#?}");
     }
 }

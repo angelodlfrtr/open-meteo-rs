@@ -1,5 +1,4 @@
-extern crate serde;
-extern crate serde_json;
+#![deny(clippy::all, clippy::perf, clippy::complexity, clippy::pedantic)]
 
 mod client;
 mod errors;

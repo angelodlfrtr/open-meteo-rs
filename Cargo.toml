@@ -1,16 +1,14 @@
 [package]
 name = "open-meteo-rs"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2021"
-description = "HTTP client for open-meteo.com api"
 homepage = "https://github.com/angelodlfrtr/open-meteo-rs"
-repository = "https://github.com/angelodlfrtr/open-meteo-rs"
 license-file = "LICENSE.txt"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+repository = "https://github.com/angelodlfrtr/open-meteo-rs"
+description = "HTTP client for open-meteo.com api"
 
 [dependencies]
-chrono = { version = "0.4.24", features = ["serde"]}
+chrono = { version = "0.4.24", features = ["serde"] }
 chrono-tz = "0.8.2"
 reqwest = { version = "0.11.14", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
