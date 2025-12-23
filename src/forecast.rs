@@ -27,16 +27,16 @@ impl From<Elevation> for String {
 }
 
 impl TryFrom<&str> for Elevation {
-    type Error = String;
+    type Error = errors::ConversionError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         if value == "nan" {
             return Ok(Self::Nan);
         }
 
-        Err(format!(
-            "invalid elevation {value:?}, only str nan is supported"
-        ))
+        Err(errors::ConversionError::InvalidElevation {
+            elevation: value.to_string(),
+        })
     }
 }
 
@@ -68,13 +68,15 @@ impl From<TemperatureUnit> for String {
 }
 
 impl TryFrom<&str> for TemperatureUnit {
-    type Error = String;
+    type Error = errors::ConversionError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "celsius" => Ok(Self::Celsius),
             "fahrenheit" => Ok(Self::Fahrenheit),
-            _ => Err(format!("invalid temperature unit {value:?}")),
+            _ => Err(errors::ConversionError::InvalidTemperatureUnit {
+                unit: value.to_string(),
+            }),
         }
     }
 }
@@ -106,7 +108,7 @@ impl From<WindSpeedUnit> for String {
 }
 
 impl TryFrom<&str> for WindSpeedUnit {
-    type Error = String;
+    type Error = errors::ConversionError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
@@ -114,7 +116,9 @@ impl TryFrom<&str> for WindSpeedUnit {
             "ms" => Ok(Self::Ms),
             "mph" => Ok(Self::Mph),
             "kn" => Ok(Self::Kn),
-            _ => Err(format!("invalid windspeed unit {value:?}")),
+            _ => Err(errors::ConversionError::InvalidWindspeedUnit {
+                unit: value.to_string(),
+            }),
         }
     }
 }
@@ -142,13 +146,15 @@ impl From<PrecipitationUnit> for String {
 }
 
 impl TryFrom<&str> for PrecipitationUnit {
-    type Error = String;
+    type Error = errors::ConversionError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "inch" => Ok(Self::Inches),
             "mm" => Ok(Self::Millimeters),
-            _ => Err(format!("invalid precicitation unit {value:?}")),
+            _ => Err(errors::ConversionError::InvalidPrecipitationUnit {
+                unit: value.to_string(),
+            }),
         }
     }
 }
@@ -177,14 +183,16 @@ impl From<CellSelection> for String {
 }
 
 impl TryFrom<&str> for CellSelection {
-    type Error = String;
+    type Error = errors::ConversionError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "land" => Ok(Self::Land),
             "sea" => Ok(Self::Sea),
             "nearest" => Ok(Self::Nearest),
-            _ => Err(format!("invalid cell selection {value:?}")),
+            _ => Err(crate::ConversionError::InvalidCellSelection {
+                selection: value.to_string(),
+            }),
         }
     }
 }
