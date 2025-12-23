@@ -201,6 +201,8 @@ impl TryFrom<&str> for CellSelection {
 pub struct Options {
     pub location: location::Location,
     pub elevation: Option<Elevation>,
+    /// Attributes to request for minutely_15 forecast
+    pub minutely_15: Vec<String>,
     /// Attributes to request in hourly intervals
     pub hourly: Vec<String>,
     /// Attributes to request in daily intervals
@@ -213,6 +215,8 @@ pub struct Options {
     pub time_zone: Option<String>,
     pub past_days: Option<u8>,
     pub forecast_days: Option<u8>,
+    // max minutely_15 data points is 1536
+    pub forecast_minutely_15: Option<u16>,
     pub start_date: Option<chrono::NaiveDate>,
     pub end_date: Option<chrono::NaiveDate>,
     pub models: Option<Vec<String>>,
@@ -225,6 +229,7 @@ impl Default for Options {
         Self {
             location: location::Location::default(),
             elevation: None,
+            minutely_15: Vec::new(),
             hourly: Vec::new(),
             daily: Vec::new(),
             current: Vec::new(),
@@ -234,6 +239,7 @@ impl Default for Options {
             time_zone: Some("UTC".into()),
             past_days: None,
             forecast_days: None,
+            forecast_minutely_15: None,
             start_date: None,
             end_date: None,
             models: None,
@@ -275,6 +281,10 @@ impl Options {
         if let Some(v) = self.past_days {
             params.push(("past_days".into(), v.to_string()));
         }
+      
+        if let Some(v) = self.forecast_minutely_15 {
+            params.push(("forecast_minutely_15".into(), v.to_string()));
+        }
 
         if let Some(v) = self.forecast_days {
             params.push(("forecast_days".into(), v.to_string()));
@@ -290,6 +300,10 @@ impl Options {
 
         if !self.current.is_empty() {
             params.push(("current".into(), self.current.join(",")));
+        }
+
+        if !self.minutely_15.is_empty() {
+            params.push(("minutely_15".into(), self.minutely_15.join(",")));
         }
 
         if !self.hourly.is_empty() {
@@ -329,6 +343,8 @@ struct ApiForecastResponse {
     pub timezone_abbreviation: Option<String>,
     pub current_units: Option<HashMap<String, String>>,
     pub current: Option<HashMap<String, serde_json::Value>>,
+    pub minutely_15_units: Option<HashMap<String, String>>,
+    pub minutely_15: Option<HashMap<String, serde_json::Value>>,
     pub hourly_units: Option<HashMap<String, String>>,
     pub hourly: Option<HashMap<String, serde_json::Value>>,
     pub daily_units: Option<HashMap<String, String>>,
@@ -348,6 +364,7 @@ pub struct ForecastResultHourly {
 }
 
 pub type CurrentResult = ForecastResultHourly;
+pub type ForecastResultMinutely15 = ForecastResultHourly;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ForecastResultDaily {
@@ -358,6 +375,7 @@ pub struct ForecastResultDaily {
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct ForecastResult {
     pub current: Option<CurrentResult>,
+    pub minutely_15: Option<Vec<ForecastResultMinutely15>>,
     pub hourly: Option<Vec<ForecastResultHourly>>,
     pub daily: Option<Vec<ForecastResultDaily>>,
 }
@@ -424,6 +442,56 @@ impl client::Client {
 
             // Get utc offset
             let utc_offset_seconds = api_res.utc_offset_seconds.unwrap_or(0);
+
+            // Minutely 15
+            if let Some(minutely_15) = api_res.minutely_15 {
+                if let Some(minutely_15_date_times) =
+                    extract_times(&minutely_15, utc_offset_seconds)?
+                {
+                    if let Some(minutely_15_units) = api_res.minutely_15_units {
+                        let mut minutely_15_result = Vec::new();
+
+                        // Iterate on times
+                        for (idx, time) in minutely_15_date_times.iter().enumerate() {
+                            let mut minutely_15_rec = ForecastResultMinutely15 {
+                                datetime: *time,
+                                ..Default::default()
+                            };
+
+                            // Iterates on values
+                            for (k, v) in minutely_15.iter() {
+                                if k == "time" {
+                                    continue;
+                                }
+
+                                let mut item = ForecastResultItem::default();
+                                let v_arr = match v.as_array() {
+                                    Some(v) => v,
+                                    None => {
+                                        return Err("cannot decode properly json input".into());
+                                    }
+                                };
+
+                                let v_val = v_arr[idx].clone();
+                                item.value = v_val;
+
+                                // Try to find unit
+                                if let Some(unit) = minutely_15_units.get(k) {
+                                    item.unit = Some(unit.clone());
+                                }
+
+                                // Push to minutely_15 record
+                                minutely_15_rec.values.insert(k.clone(), item);
+                            }
+
+                            // Push minutely_15 rec
+                            minutely_15_result.push(minutely_15_rec);
+                        }
+
+                        result.minutely_15 = Some(minutely_15_result);
+                    }
+                }
+            }
 
             // Hourly
             if let Some(hourly) = api_res.hourly {
@@ -586,6 +654,8 @@ mod tests {
 
         opts.elevation = Some("nan".try_into().unwrap());
 
+        opts.minutely_15.push("temperature_2m".into());
+        opts.minutely_15.push("windspeed_10m".into());
         opts.hourly.push("temperature_2m".into());
         opts.hourly.push("windspeed_120m".into());
         opts.daily.push("temperature_2m_max".into());
