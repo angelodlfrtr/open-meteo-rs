@@ -27,6 +27,7 @@
             rust-analyzer
             openssl
             pkg-config
+            dprint
           ];
         };
       }

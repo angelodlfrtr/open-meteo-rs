@@ -38,10 +38,12 @@ impl Default for Client {
 }
 
 impl Client {
+    #[must_use]
     pub fn new() -> Client {
         Self::default()
     }
 
+    #[must_use]
     pub fn with_endpoints(
         forecast_endpoint: &str,
         archive_endpoint: &str,
@@ -57,23 +59,19 @@ impl Client {
         }
     }
 
+    #[must_use]
     pub fn with_forecast_endpoint(mut self, endpoint: String) -> Client {
         self.forecast_endpoint = endpoint;
         self
     }
 
-    #[deprecated(
-        note = "this method contains a typo; please use `with_geocoding_endpoint` instead"
-    )]
-    pub fn with_geowoding_endpoint(self, endpoint: String) -> Client {
-        self.with_geocoding_endpoint(endpoint)
-    }
-
+    #[must_use]
     pub fn with_geocoding_endpoint(mut self, endpoint: String) -> Client {
         self.geocoding_endpoint = endpoint;
         self
     }
 
+    #[must_use]
     pub fn with_reqwest_client(mut self, client: reqwest::Client) -> Client {
         self.http_client = client;
         self

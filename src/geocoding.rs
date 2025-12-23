@@ -1,4 +1,4 @@
-use super::*;
+use super::{client, errors};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
@@ -11,41 +11,41 @@ pub struct Options {
 }
 
 impl Options {
+    #[must_use]
     pub fn with_name(mut self, name: String) -> Self {
         self.name = Some(name);
         self
     }
 
+    #[must_use]
     pub fn with_language(mut self, language: String) -> Self {
         self.language = Some(language);
         self
     }
 
+    #[must_use]
     pub fn with_count(mut self, count: u16) -> Self {
         self.count = Some(count);
         self
     }
 
-    fn as_params(self) -> Vec<(String, String)> {
+    fn into_params(self) -> Vec<(String, String)> {
         let mut params = Vec::new();
 
-        match self.name {
-            Some(v) => params.push(("name".into(), v)),
-            None => (),
+        if let Some(v) = self.name {
+            params.push(("name".into(), v));
         }
 
-        match self.language {
-            Some(v) => params.push(("language".into(), v)),
-            None => (),
+        if let Some(v) = self.language {
+            params.push(("language".into(), v));
         }
 
-        match self.count {
-            Some(v) => params.push(("count".into(), v.to_string())),
-            None => (),
+        if let Some(v) = self.count {
+            params.push(("count".into(), v.to_string()));
         }
 
         if let Some(apikey) = self.apikey {
-            params.push(("apikey".into(), apikey.to_string()));
+            params.push(("apikey".into(), apikey.clone()));
         }
 
         params
@@ -83,8 +83,13 @@ pub struct GeocodingResult {
 }
 
 impl client::Client {
+    /// Make a geocoding request.
+    ///
+    /// ### Errors
+    ///
+    /// Will return `Err` if api return an invaid response or in case of network error.
     pub async fn geocoding(&self, opts: Options) -> Result<GeocodingResponse, Box<dyn Error>> {
-        let url = reqwest::Url::parse_with_params(&self.geocoding_endpoint, opts.as_params())?;
+        let url = reqwest::Url::parse_with_params(&self.geocoding_endpoint, opts.into_params())?;
         let res = self.http_client.get(url).send().await?;
 
         if res.status().is_success() {
@@ -94,7 +99,7 @@ impl client::Client {
 
         Err(Box::new(errors::ClientError::InvalidResponseStatus {
             status_code: res.status().as_u16(),
-            text: res.text().await.unwrap_or("".into()),
+            text: res.text().await.unwrap_or(String::new()),
         }))
     }
 }
@@ -105,10 +110,12 @@ mod tests {
 
     #[tokio::test]
     async fn search() {
-        let clt = Client::new();
+        let clt = client::Client::new();
         let opts = Options::default().with_name("Paris".into());
         let res = clt.geocoding(opts).await.unwrap();
-        println!("{:?}", res);
-        assert!(res.results.unwrap().len() > 0);
+
+        println!("{res:?}");
+
+        assert!(!res.results.unwrap().is_empty());
     }
 }

@@ -1,3 +1,5 @@
+#![allow(clippy::field_reassign_with_default)]
+
 extern crate open_meteo_rs;
 
 #[tokio::main]

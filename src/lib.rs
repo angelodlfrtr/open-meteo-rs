@@ -1,3 +1,5 @@
+#![deny(clippy::all, clippy::perf, clippy::complexity, clippy::pedantic)]
+
 extern crate serde;
 extern crate serde_json;
 

@@ -1,4 +1,4 @@
-use super::*;
+use super::{client, errors, forecast, location};
 use chrono::TimeZone;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -15,7 +15,7 @@ impl Display for Elevation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Nan => write!(f, "nan"),
-            Self::Value(v) => write!(f, "{}", v.to_string()),
+            Self::Value(v) => write!(f, "{v}"),
         }
     }
 }
@@ -35,8 +35,7 @@ impl TryFrom<&str> for Elevation {
         }
 
         Err(format!(
-            "invalid elevation {:?}, only str nan is supported",
-            value
+            "invalid elevation {value:?}, only str nan is supported"
         ))
     }
 }
@@ -75,7 +74,7 @@ impl TryFrom<&str> for TemperatureUnit {
         match value {
             "celsius" => Ok(Self::Celsius),
             "fahrenheit" => Ok(Self::Fahrenheit),
-            _ => Err(format!("invalid temperature unit {:?}", value)),
+            _ => Err(format!("invalid temperature unit {value:?}")),
         }
     }
 }
@@ -115,7 +114,7 @@ impl TryFrom<&str> for WindSpeedUnit {
             "ms" => Ok(Self::Ms),
             "mph" => Ok(Self::Mph),
             "kn" => Ok(Self::Kn),
-            _ => Err(format!("invalid windspeed unit {:?}", value)),
+            _ => Err(format!("invalid windspeed unit {value:?}")),
         }
     }
 }
@@ -149,7 +148,7 @@ impl TryFrom<&str> for PrecipitationUnit {
         match value {
             "inch" => Ok(Self::Inches),
             "mm" => Ok(Self::Millimeters),
-            _ => Err(format!("invalid precicitation unit {:?}", value)),
+            _ => Err(format!("invalid precicitation unit {value:?}")),
         }
     }
 }
@@ -185,7 +184,7 @@ impl TryFrom<&str> for CellSelection {
             "land" => Ok(Self::Land),
             "sea" => Ok(Self::Sea),
             "nearest" => Ok(Self::Nearest),
-            _ => Err(format!("invalid cell selection {:?}", value)),
+            _ => Err(format!("invalid cell selection {value:?}")),
         }
     }
 }
@@ -237,6 +236,7 @@ impl Default for Options {
 }
 
 impl Options {
+    #[must_use]
     pub fn as_params(self) -> Vec<(String, String)> {
         let mut params = Vec::new();
 
@@ -244,75 +244,66 @@ impl Options {
         params.push(("longitude".into(), self.location.lng.to_string()));
         params.push(("timeformat".into(), "unixtime".into()));
 
-        match self.elevation {
-            Some(v) => params.push(("elevation".into(), v.into())),
-            None => (),
+        if let Some(v) = self.elevation {
+            params.push(("elevation".into(), v.into()));
         }
 
-        match self.temperature_unit {
-            Some(v) => params.push(("temperature_unit".into(), v.into())),
-            None => (),
+        if let Some(v) = self.temperature_unit {
+            params.push(("temperature_unit".into(), v.into()));
         }
 
-        match self.wind_speed_unit {
-            Some(v) => params.push(("windspeed_unit".into(), v.into())),
-            None => (),
+        if let Some(v) = self.wind_speed_unit {
+            params.push(("windspeed_unit".into(), v.into()));
         }
 
-        match self.precipitation_unit {
-            Some(v) => params.push(("precipitation_unit".into(), v.into())),
-            None => (),
+        if let Some(v) = self.precipitation_unit {
+            params.push(("precipitation_unit".into(), v.into()));
         }
 
-        match self.time_zone {
-            Some(v) => params.push(("timezone".into(), v.to_string())),
-            None => (),
+        if let Some(v) = self.time_zone {
+            params.push(("timezone".into(), v.clone()));
         }
 
-        match self.past_days {
-            Some(v) => params.push(("past_days".into(), v.to_string())),
-            None => (),
+        if let Some(v) = self.past_days {
+            params.push(("past_days".into(), v.to_string()));
         }
 
-        match self.forecast_days {
-            Some(v) => params.push(("forecast_days".into(), v.to_string())),
-            None => (),
+        if let Some(v) = self.forecast_days {
+            params.push(("forecast_days".into(), v.to_string()));
         }
 
-        match self.start_date {
-            Some(v) => params.push(("start_date".into(), v.format("%Y-%m-%d").to_string())),
-            None => (),
+        if let Some(v) = self.start_date {
+            params.push(("start_date".into(), v.format("%Y-%m-%d").to_string()));
         }
 
-        match self.end_date {
-            Some(v) => params.push(("end_date".into(), v.format("%Y-%m-%d").to_string())),
-            None => (),
+        if let Some(v) = self.end_date {
+            params.push(("end_date".into(), v.format("%Y-%m-%d").to_string()));
         }
 
         if !self.current.is_empty() {
             params.push(("current".into(), self.current.join(",")));
         }
-        if self.hourly.len() > 0 {
+
+        if !self.hourly.is_empty() {
             params.push(("hourly".into(), self.hourly.join(",")));
         }
 
-        if self.daily.len() > 0 {
+        if !self.daily.is_empty() {
             params.push(("daily".into(), self.daily.join(",")));
         }
 
         if let Some(models) = self.models {
-            if models.len() > 0 {
+            if !models.is_empty() {
                 params.push(("models".into(), models.join(",")));
             }
         }
 
-        match self.cell_selection {
-            Some(v) => params.push(("cell_selection".into(), v.into())),
-            None => (),
+        if let Some(v) = self.cell_selection {
+            params.push(("cell_selection".into(), v.into()));
         }
 
         if let Some(apikey) = self.apikey {
-            params.push(("apikey".into(), apikey.to_string()));
+            params.push(("apikey".into(), apikey.clone()));
         }
 
         params
@@ -365,12 +356,20 @@ pub struct ForecastResult {
 
 impl client::Client {
     /// Request forecast data
+    ///
+    /// ### Errors
+    ///
+    /// Return an `Err` if api return an error or in case of network error.
     pub async fn forecast(&self, opts: Options) -> Result<ForecastResult, Box<dyn Error>> {
         self.request(opts, &format!("{}forecast", self.forecast_endpoint))
             .await
     }
 
     /// Request data from the archive (historic weather data)
+    ///
+    /// ### Errors
+    ///
+    /// Return an `Err` if api return an error or in case of network error.
     pub async fn archive(&self, opts: Options) -> Result<ForecastResult, Box<dyn Error>> {
         self.request(opts, &format!("{}archive", self.archive_endpoint))
             .await
@@ -381,7 +380,7 @@ impl client::Client {
         opts: Options,
         api_endpoint: &str,
     ) -> Result<ForecastResult, Box<dyn Error>> {
-        let url = reqwest::Url::parse_with_params(&api_endpoint, opts.as_params())?;
+        let url = reqwest::Url::parse_with_params(api_endpoint, opts.as_params())?;
         let res = self.http_client.get(url).send().await?;
 
         if res.status().is_success() {
@@ -393,7 +392,7 @@ impl client::Client {
                 let api_units = api_res.current_units.clone();
                 // Iterates on values
                 let mut current_result = CurrentResult::default();
-                for (k, v) in current.iter() {
+                for (k, v) in &current {
                     if k == "time" {
                         current_result.datetime = match v.as_i64() {
                             Some(v) => unix_time_to_naive_datetime(v, 0),
@@ -426,32 +425,28 @@ impl client::Client {
 
                         // Iterate on times
                         for (idx, time) in hourly_date_times.iter().enumerate() {
-                            let mut hourly_rec = ForecastResultHourly::default();
-                            hourly_rec.datetime = *time;
+                            let mut hourly_rec = forecast::ForecastResultHourly {
+                                datetime: *time,
+                                ..Default::default()
+                            };
 
                             // Iterates on values
-                            for (k, v) in hourly.iter() {
+                            for (k, v) in &hourly {
                                 if k == "time" {
                                     continue;
                                 }
 
                                 let mut item = ForecastResultItem::default();
-                                let v_arr = match v.as_array() {
-                                    Some(v) => v,
-                                    None => {
-                                        return Err("cannot decode properly json input".into());
-                                    }
+                                let Some(v_arr) = v.as_array() else {
+                                    return Err("cannot decode properly json input".into());
                                 };
 
                                 let v_val = v_arr[idx].clone();
                                 item.value = v_val;
 
                                 // Try to find unit
-                                match hourly_units.get(k) {
-                                    Some(unit) => {
-                                        item.unit = Some(unit.clone());
-                                    }
-                                    None => (),
+                                if let Some(unit) = hourly_units.get(k) {
+                                    item.unit = Some(unit.clone());
                                 }
 
                                 // Push to hourly record
@@ -475,31 +470,27 @@ impl client::Client {
 
                         // Iterate on times
                         for (idx, time) in daily_date_times.iter().enumerate() {
-                            let mut daily_rec = ForecastResultDaily::default();
-                            daily_rec.date = (*time).date();
+                            let mut daily_rec = forecast::ForecastResultDaily {
+                                date: (*time).date(),
+                                ..Default::default()
+                            };
 
                             // Iterates on values
-                            for (k, v) in daily.iter() {
+                            for (k, v) in &daily {
                                 if k == "time" {
                                     continue;
                                 }
 
                                 let mut item = ForecastResultItem::default();
-                                let v_arr = match v.as_array() {
-                                    Some(v) => v,
-                                    None => {
-                                        return Err("cannot decode properly json input".into());
-                                    }
+                                let Some(v_arr) = v.as_array() else {
+                                    return Err("cannot decode properly json input".into());
                                 };
                                 let v_val = v_arr[idx].clone();
                                 item.value = v_val;
 
                                 // Try to find unit
-                                match daily_units.get(k) {
-                                    Some(unit) => {
-                                        item.unit = Some(unit.clone());
-                                    }
-                                    None => (),
+                                if let Some(unit) = daily_units.get(k) {
+                                    item.unit = Some(unit.clone());
                                 }
 
                                 // Push to daily record
@@ -520,35 +511,38 @@ impl client::Client {
 
         Err(Box::new(errors::ClientError::InvalidResponseStatus {
             status_code: res.status().as_u16(),
-            text: res.text().await.unwrap_or("".into()),
+            text: res.text().await.unwrap_or(String::new()),
         }))
     }
 }
 
+#[must_use]
 pub fn unix_time_to_naive_datetime(
     unix_time: i64,
     utc_offset_seconds: i32,
 ) -> chrono::NaiveDateTime {
     chrono::Utc
-        .timestamp_millis_opt((unix_time + utc_offset_seconds as i64) * 1000)
+        .timestamp_millis_opt((unix_time + i64::from(utc_offset_seconds)) * 1000)
         .unwrap()
         .naive_local()
 }
 
-pub fn extract_times(
-    input: &HashMap<String, serde_json::Value>,
+/// Extract times from json and return a `Option<Vec<chrono::NaiveDateTime>>`.
+///
+/// ### Errors
+///
+/// Return `Err` if json input cannot be decoded.
+pub fn extract_times<S: ::std::hash::BuildHasher>(
+    input: &HashMap<String, serde_json::Value, S>,
     utc_offset_seconds: i32,
 ) -> Result<Option<Vec<chrono::NaiveDateTime>>, Box<dyn Error>> {
     if let Some(time) = input.get("time") {
         if let Some(time_values) = time.as_array() {
             let mut hourly_datetimes = Vec::new();
 
-            for v in time_values.iter() {
-                let unix_tm = match v.as_i64() {
-                    Some(v) => v,
-                    None => {
-                        return Err("cannot decode properly json input".into());
-                    }
+            for v in time_values {
+                let Some(unix_tm) = v.as_i64() else {
+                    return Err("cannot decode properly json input".into());
                 };
 
                 let dd = unix_time_to_naive_datetime(unix_tm, utc_offset_seconds);
@@ -571,15 +565,18 @@ mod tests {
 
     #[tokio::test]
     async fn get_forecast_single() {
-        let clt = Client::new();
-        let mut opts = Options::default();
-        opts.location = Location {
-            lat: 52.52,
-            lng: 13.41,
+        let clt = client::Client::new();
+        let mut opts = Options {
+            location: location::Location {
+                lat: 52.52,
+                lng: 13.41,
+            },
+            current: vec!["temperature_2m".into()],
+            elevation: Some(8.65.into()),
+            ..Default::default()
         };
-        opts.current = vec!["temperature_2m".into()];
+
         opts.elevation = Some("nan".try_into().unwrap());
-        opts.elevation = Some(8.65.into());
 
         opts.hourly.push("temperature_2m".into());
         opts.hourly.push("windspeed_120m".into());
@@ -591,19 +588,23 @@ mod tests {
         opts.end_date = Some((chrono::Utc::now() + Duration::days(4)).date_naive());
 
         let res = clt.forecast(opts).await.unwrap();
-        println!("{:#?}", res);
+        println!("{res:#?}");
     }
 
     #[tokio::test]
     async fn get_forecast_parallel() {
-        let clt = Client::new();
+        let clt = client::Client::new();
 
-        let mut opts = Options::default();
-        opts.location = Location {
-            lat: 48.864716,
-            lng: 2.349014,
+        let mut opts = Options {
+            location: location::Location {
+                lat: 48.864_716,
+                lng: 2.349_014,
+            },
+            ..Default::default()
         };
+
         opts.hourly.push("temperature_2m".into());
+
         let opts_two = opts.clone();
         let fut_one = clt.forecast(opts);
         let fut_two = clt.forecast(opts_two);
