@@ -298,6 +298,7 @@ pub enum Model {
 }
 
 impl std::fmt::Display for Model {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Undefined => write!(f, "undefined"),
@@ -444,6 +445,8 @@ impl std::fmt::Display for Model {
 
 impl TryFrom<&str> for Model {
     type Error = errors::ConversionError;
+
+    #[allow(clippy::too_many_lines)]
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "undefined" => Ok(Self::Undefined),
