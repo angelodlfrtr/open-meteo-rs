@@ -20,6 +20,9 @@ pub enum ConversionError {
     #[snafu(display("Invalid precipitation unit '{unit}'"))]
     InvalidPrecipitationUnit { unit: String },
 
+    #[snafu(display("Invalid model '{model}'"))]
+    InvalidModel { model: String },
+
     #[snafu(display("Invalid cell selection '{selection}'"))]
     InvalidCellSelection { selection: String },
 }
