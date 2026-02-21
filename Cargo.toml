@@ -1,6 +1,6 @@
 [package]
 name = "open-meteo-rs"
-version = "0.0.5"
+version = "0.1.0"
 edition = "2021"
 homepage = "https://github.com/angelodlfrtr/open-meteo-rs"
 license-file = "LICENSE.txt"
