@@ -57,7 +57,7 @@ async fn main() {
     opts.end_date = Some(start_date + chrono::Duration::days(2));
 
     // Models
-    // opts.models = Some(vec!["auto".into()]); // Crash on server side
+    // opts.models = vec![open_meteo_rs::Model::BestMatch];
 
     // Cell selection
     opts.cell_selection = Some(open_meteo_rs::forecast::CellSelection::Land); // or
