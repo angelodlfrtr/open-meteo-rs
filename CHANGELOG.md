@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0
+
+### Changed (breaking)
+
+- `reqwest` 0.13: TLS is provided by rustls with aws-lc-rs instead of OpenSSL, so the client no
+  longer needs OpenSSL at build or run time. Building it needs cmake and a C compiler.
+- Minimum supported Rust version is 1.85.
+
 ## 0.2.0
 
 The crate is now a workspace: `open-meteo-core` holds request building and response parsing
