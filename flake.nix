@@ -27,8 +27,7 @@
           packages = with pkgs; [
             clippy
             rust-analyzer
-            openssl
-            pkg-config
+            cmake # aws-lc-sys, the TLS backend behind reqwest
             dprint
             gnumake
             cargo-llvm-cov
