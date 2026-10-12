@@ -26,3 +26,6 @@ jobs:
 
       - name: Check line coverage is 100%
         run: nix develop --command make coverage
+
+      - name: Build the API docs with warnings denied
+        run: nix develop --command make doc

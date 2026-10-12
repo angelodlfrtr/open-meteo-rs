@@ -18,17 +18,18 @@ belongs in `open-meteo-rs`.
 
 Run from the repository root. The nix dev shell (`nix develop`, or direnv) provides the toolchain.
 
+`make help` lists every target. The ones that matter day to day:
+
 ```sh
-make clippy        # pedantic lints, all features and all targets; must be clean
-make test          # offline tests only; must pass before every commit
+make check         # fmt-check + clippy + test; run before every commit
+make ci            # everything CI runs, including coverage, no_std and docs; run before pushing
 make test-live     # ignored smoke tests against the public API; run after touching a client or an endpoint
-make check-no-std  # builds the core for wasm32v1-none; run after touching the core or its dependencies
-make coverage      # cargo-llvm-cov; fails below 100% line coverage, which CI enforces
+make check-no-std  # run after touching the core or its dependencies
 make fmt           # cargo fmt + dprint (TOML and Markdown)
-make fmt-check
 ```
 
-CI runs `fmt-check`, `clippy`, `test`, `check-no-std` and `coverage`. It has no network access to the API.
+CI runs `make fmt-check`, `clippy`, `test`, `check-no-std`, `coverage` and `doc`, i.e. `make ci`.
+It has no network access to the API.
 
 ## Layout of the core
 

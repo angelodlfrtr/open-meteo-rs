@@ -137,10 +137,8 @@ turns the API's error body into a readable error.
 ## Development
 
 ```sh
-make clippy        # lints, all features and targets
-make test          # offline tests: recorded API answers and exact URLs
+make help          # lists every target
+make check         # format check, lints and offline tests
+make ci            # everything CI runs
 make test-live     # smoke tests against the public API
-make check-no-std  # builds the core for a target without std
-make coverage      # line coverage report; fails below 100%
-make fmt           # dprint + cargo fmt
 ```
