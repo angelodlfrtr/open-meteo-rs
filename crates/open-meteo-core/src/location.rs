@@ -3,7 +3,9 @@ use serde::{Deserialize, Serialize};
 /// A WGS84 coordinate.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Location {
+    /// Latitude in decimal degrees, -90 to 90.
     pub lat: f64,
+    /// Longitude in decimal degrees, -180 to 180.
     pub lng: f64,
 }
 

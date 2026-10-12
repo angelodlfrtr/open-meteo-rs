@@ -10,7 +10,9 @@ use crate::{Error, Location, Query, Request};
 /// Parameters of an elevation lookup. Up to 100 locations per request.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Options {
+    /// Places to query, up to 100 per request.
     pub locations: Vec<Location>,
+    /// API key for the commercial API. Not needed for the free tier.
     pub apikey: Option<String>,
 }
 

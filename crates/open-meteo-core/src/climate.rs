@@ -16,6 +16,7 @@ use crate::{
 /// models are required by the API, so they are not optional here.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Options {
+    /// Coordinates of the place to query.
     pub location: Location,
     /// First day of the range, 1950-01-01 at the earliest.
     pub start_date: NaiveDate,
@@ -25,12 +26,17 @@ pub struct Options {
     pub models: Vec<Model>,
     /// Variables to return as daily aggregations.
     pub daily: Vec<String>,
+    /// Unit for temperatures. The API defaults to Celsius.
     pub temperature_unit: Option<TemperatureUnit>,
+    /// Unit for wind speeds. The API defaults to km/h.
     pub wind_speed_unit: Option<WindSpeedUnit>,
+    /// Unit for precipitation. The API defaults to millimetres.
     pub precipitation_unit: Option<PrecipitationUnit>,
     /// Return raw model output instead of values bias-corrected against ERA5-Land.
     pub disable_bias_correction: bool,
+    /// How to choose the grid cell for the coordinates. The API defaults to `land` on most endpoints.
     pub cell_selection: Option<CellSelection>,
+    /// API key for the commercial API. Not needed for the free tier.
     pub apikey: Option<String>,
 }
 
@@ -54,8 +60,10 @@ impl Default for Options {
     }
 }
 
+/// Climate projection data. With several models, variables are suffixed with the model name.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct ClimateResult {
+    /// Daily values, present when `daily` variables were requested.
     pub daily: Option<Vec<DateStep>>,
 }
 

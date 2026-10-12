@@ -63,7 +63,9 @@ CI runs `fmt-check`, `clippy`, `test` and `check-no-std`. It has no network acce
   `[workspace.dependencies]`; crates opt into features there.
 - Clippy runs with `pedantic` denied. Fix the lint rather than allowing it. When an allow is
   truly needed, put a comment above it saying why.
-- Public items have doc comments. Fallible functions document `# Errors`.
+- Every public item has a doc comment; `missing_docs` is denied in both crates. Fallible functions
+  document `# Errors`. Clippy also checks doc markdown, so mixed-case product names either get
+  backticks or are spelled out in plain words.
 - Results keep values as raw `serde_json::Value`: the API mixes numbers, strings and nulls per
   variable and the caller knows what they asked for. Do not add per-variable typed fields.
 - `BTreeMap`, not `HashMap`: the core has no `std`, and ordered output keeps tests deterministic.

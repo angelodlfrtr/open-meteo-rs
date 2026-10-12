@@ -29,6 +29,7 @@ pub struct Query {
 }
 
 impl Query {
+    /// An empty query.
     #[must_use]
     pub fn new() -> Self {
         Self::default()

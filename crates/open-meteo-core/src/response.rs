@@ -24,7 +24,9 @@ use crate::Error;
 /// sunrise times) and nulls depending on the variable.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Measurement {
+    /// Unit as reported by the API, e.g. `°C`, when it provided one.
     pub unit: Option<String>,
+    /// The raw JSON value: a number, a string, or null when the API has no data.
     pub value: Value,
 }
 
@@ -33,6 +35,7 @@ pub struct Measurement {
 pub struct TimeStep {
     /// Local time in the requested time zone.
     pub datetime: NaiveDateTime,
+    /// Every requested variable, by name.
     pub values: BTreeMap<String, Measurement>,
 }
 
@@ -41,6 +44,7 @@ pub struct TimeStep {
 pub struct DateStep {
     /// Local date in the requested time zone.
     pub date: NaiveDate,
+    /// Every requested variable, by name.
     pub values: BTreeMap<String, Measurement>,
 }
 
