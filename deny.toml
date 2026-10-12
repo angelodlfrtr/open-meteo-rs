@@ -1,0 +1,22 @@
+# cargo-deny configuration: advisories, licences, duplicate versions and sources.
+# Run with `make lint-deps`. Reference: https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+all-features = true
+
+[advisories]
+yanked = "deny"
+
+[licenses]
+# Permissive licences only. Add to the list deliberately, not to silence a failure.
+allow = ["MIT", "Apache-2.0", "BSD-3-Clause", "Unicode-3.0"]
+confidence-threshold = 0.8
+
+[bans]
+# reqwest 0.11 still drags a few duplicate versions; warn so they stay visible without failing.
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

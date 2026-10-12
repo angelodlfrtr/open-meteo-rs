@@ -139,6 +139,7 @@ turns the API's error body into a readable error.
 ```sh
 make help          # lists every target
 make check         # format check, lints and offline tests
+make lint          # workflow, flake, spelling and dependency lints
 make ci            # everything CI runs
 make test-live     # smoke tests against the public API
 ```

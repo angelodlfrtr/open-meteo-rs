@@ -21,9 +21,9 @@
         llvm = pkgs.rustc.llvmPackages.llvm;
       in
       {
-        formatter = pkgs.nixfmt-rfc-style;
+        formatter = pkgs.nixfmt;
 
-        devShell = craneLib.devShell {
+        devShells.default = craneLib.devShell {
           packages = with pkgs; [
             clippy
             rust-analyzer
@@ -32,6 +32,13 @@
             dprint
             gnumake
             cargo-llvm-cov
+            # `make lint`
+            actionlint
+            zizmor
+            typos
+            cargo-deny
+            cargo-machete
+            nixfmt
           ];
           LLVM_COV = "${llvm}/bin/llvm-cov";
           LLVM_PROFDATA = "${llvm}/bin/llvm-profdata";
