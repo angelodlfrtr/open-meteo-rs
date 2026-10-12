@@ -6,6 +6,7 @@ members = ["crates/*"]
 version = "0.2.0"
 edition = "2021"
 homepage = "https://github.com/angelodlfrtr/open-meteo-rs"
+license = "MIT"
 license-file = "LICENSE.txt"
 repository = "https://github.com/angelodlfrtr/open-meteo-rs"
 rust-version = "1.81"
@@ -15,7 +16,7 @@ chrono = { version = "0.4.31", default-features = false }
 chrono-tz = "0.8.2"
 futures = "0.3.25"
 percent-encoding = { version = "2.3", default-features = false, features = ["alloc"] }
-reqwest = { version = "0.11.14", features = ["json"] }
+reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1.0", default-features = false }
 serde_json = { version = "1.0.91", default-features = false }
 thiserror = { version = "2.0", default-features = false }

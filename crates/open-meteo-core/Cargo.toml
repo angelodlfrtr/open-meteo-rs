@@ -3,6 +3,7 @@ name = "open-meteo-core"
 version.workspace = true
 edition.workspace = true
 homepage.workspace = true
+license.workspace = true
 license-file.workspace = true
 readme = "README.md"
 repository.workspace = true
