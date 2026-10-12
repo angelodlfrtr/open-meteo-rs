@@ -13,10 +13,32 @@ COVERAGE_IGNORE := '(tests|examples)/'
 ##@ Checks
 
 .PHONY: ci
-ci: fmt-check clippy test check-no-std coverage doc ## Everything CI runs, in order
+ci: lint fmt-check clippy test check-no-std coverage doc ## Everything CI runs, in order
 
 .PHONY: check
 check: fmt-check clippy test ## The quick pre-commit set: format, lints, offline tests
+
+.PHONY: lint
+lint: lint-workflows lint-nix lint-typos lint-deps ## Lint the CI workflow, the flake, spelling and the dependency tree
+
+.PHONY: lint-workflows
+lint-workflows: ## actionlint (syntax, expressions, shellcheck) and zizmor (security hygiene) on the workflows
+	actionlint
+	zizmor --min-severity low .github/workflows
+
+.PHONY: lint-nix
+lint-nix: ## Check flake.nix formatting and that the flake evaluates
+	nixfmt --check flake.nix
+	nix flake check --no-build
+
+.PHONY: lint-typos
+lint-typos: ## Spell-check sources, docs and configs
+	typos
+
+.PHONY: lint-deps
+lint-deps: ## cargo-deny (advisories, licences, sources) and cargo-machete (unused dependencies)
+	cargo deny check
+	cargo machete
 
 .PHONY: fmt-check
 fmt-check: ## Verify formatting of Rust, TOML and Markdown without changing anything

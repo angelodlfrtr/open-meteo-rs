@@ -1,0 +1,13 @@
+# Spell checker configuration for `typos`. Run with `make lint-typos`.
+
+[files]
+extend-exclude = [
+  "Cargo.lock",
+  "flake.lock",
+  "crates/open-meteo-core/tests/fixtures/*.json",
+]
+
+[default.extend-identifiers]
+# NOAA's North American Mesoscale model, not a misspelling of "name".
+ncep_nam_conus = "ncep_nam_conus"
+NcepNamConus = "NcepNamConus"

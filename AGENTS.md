@@ -22,13 +22,14 @@ Run from the repository root. The nix dev shell (`nix develop`, or direnv) provi
 
 ```sh
 make check         # fmt-check + clippy + test; run before every commit
+make lint          # actionlint + zizmor on the workflow, nixfmt + flake check, typos, cargo-deny, cargo-machete
 make ci            # everything CI runs, including coverage, no_std and docs; run before pushing
 make test-live     # ignored smoke tests against the public API; run after touching a client or an endpoint
 make check-no-std  # run after touching the core or its dependencies
 make fmt           # cargo fmt + dprint (TOML and Markdown)
 ```
 
-CI runs `make fmt-check`, `clippy`, `test`, `check-no-std`, `coverage` and `doc`, i.e. `make ci`.
+CI runs `make lint`, `fmt-check`, `clippy`, `test`, `check-no-std`, `coverage` and `doc`, i.e. `make ci`.
 It has no network access to the API.
 
 ## Layout of the core
@@ -78,5 +79,9 @@ It has no network access to the API.
   variant by round-trip tests. New code comes with the tests that cover it.
 - Commits follow Conventional Commits: `feat(endpoints): ...`, `fix(core): ...`, `docs: ...`,
   `chore(workspace): ...`. One logical change per commit, each one green on its own.
+- Lint configuration lives at the root: `deny.toml` (advisories, licence allow-list, sources),
+  `typos.toml` (spell-check exclusions and known identifiers such as model names). Add to them
+  deliberately, with a comment, rather than to silence a failure. Workflow actions are pinned to
+  commit SHAs with the tag in a trailing comment; Dependabot keeps them and cargo deps fresh.
 - The two crates share one version and are released together. Publish `open-meteo-core`
   before `open-meteo-rs`. Record breaking changes in `CHANGELOG.md`.
