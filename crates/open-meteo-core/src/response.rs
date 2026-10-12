@@ -273,6 +273,27 @@ mod tests {
     }
 
     #[test]
+    fn current_without_time_is_rejected() {
+        let raw = response(r#"{"current": {"temperature_2m": 1.0}}"#);
+        assert!(matches!(raw.current(), Err(Error::Malformed(_))));
+    }
+
+    #[test]
+    fn non_integer_times_are_rejected() {
+        let raw = response(r#"{"hourly": {"time": ["2024-01-01T00:00"]}}"#);
+        assert!(matches!(raw.hourly(), Err(Error::Malformed(_))));
+
+        let raw = response(r#"{"current": {"time": "2024-01-01T00:00"}}"#);
+        assert!(matches!(raw.current(), Err(Error::Malformed(_))));
+    }
+
+    #[test]
+    fn out_of_range_times_are_rejected() {
+        let raw = response(r#"{"daily": {"time": [9223372036854775807]}}"#);
+        assert!(matches!(raw.daily(), Err(Error::Malformed(_))));
+    }
+
+    #[test]
     fn missing_time_is_rejected() {
         let raw = response(r#"{"hourly": {"temperature_2m": [1.0]}}"#);
         assert!(matches!(raw.hourly(), Err(Error::Malformed(_))));

@@ -299,3 +299,113 @@ impl TryFrom<&str> for TemporalResolution {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Checks `Display`, `TryFrom<&str>` and `From<T> for String` agree on every variant.
+    fn round_trips<T>(cases: &[(T, &str)])
+    where
+        T: Copy + PartialEq + core::fmt::Debug + Display + Into<String> + for<'a> TryFrom<&'a str>,
+        for<'a> <T as TryFrom<&'a str>>::Error: core::fmt::Debug,
+    {
+        for (value, id) in cases {
+            assert_eq!(value.to_string(), *id);
+            assert_eq!(Into::<String>::into(*value), *id);
+            assert_eq!(T::try_from(*id).unwrap(), *value);
+        }
+    }
+
+    #[test]
+    fn temperature_units() {
+        round_trips(&[
+            (TemperatureUnit::Celsius, "celsius"),
+            (TemperatureUnit::Fahrenheit, "fahrenheit"),
+        ]);
+        assert_eq!(
+            TemperatureUnit::try_from("kelvin").unwrap_err().to_string(),
+            "invalid temperature unit 'kelvin'"
+        );
+    }
+
+    #[test]
+    fn wind_speed_units() {
+        round_trips(&[
+            (WindSpeedUnit::Kmh, "kmh"),
+            (WindSpeedUnit::Ms, "ms"),
+            (WindSpeedUnit::Mph, "mph"),
+            (WindSpeedUnit::Kn, "kn"),
+        ]);
+        assert_eq!(
+            WindSpeedUnit::try_from("bft").unwrap_err().to_string(),
+            "invalid wind speed unit 'bft'"
+        );
+    }
+
+    #[test]
+    fn precipitation_units() {
+        round_trips(&[
+            (PrecipitationUnit::Millimeters, "mm"),
+            (PrecipitationUnit::Inches, "inch"),
+        ]);
+        assert_eq!(
+            PrecipitationUnit::try_from("cm").unwrap_err().to_string(),
+            "invalid precipitation unit 'cm'"
+        );
+    }
+
+    #[test]
+    fn length_units() {
+        round_trips(&[
+            (LengthUnit::Metric, "metric"),
+            (LengthUnit::Imperial, "imperial"),
+        ]);
+        assert_eq!(
+            LengthUnit::try_from("nautical").unwrap_err().to_string(),
+            "invalid length unit 'nautical'"
+        );
+    }
+
+    #[test]
+    fn cell_selections() {
+        round_trips(&[
+            (CellSelection::Land, "land"),
+            (CellSelection::Sea, "sea"),
+            (CellSelection::Nearest, "nearest"),
+        ]);
+        assert_eq!(
+            CellSelection::try_from("air").unwrap_err().to_string(),
+            "invalid cell selection 'air'"
+        );
+    }
+
+    #[test]
+    fn temporal_resolutions() {
+        round_trips(&[
+            (TemporalResolution::Native, "native"),
+            (TemporalResolution::Hourly, "hourly"),
+            (TemporalResolution::Hourly3, "hourly_3"),
+            (TemporalResolution::Hourly6, "hourly_6"),
+        ]);
+        assert_eq!(
+            TemporalResolution::try_from("daily")
+                .unwrap_err()
+                .to_string(),
+            "invalid temporal resolution 'daily'"
+        );
+    }
+
+    #[test]
+    fn elevation() {
+        assert_eq!(Elevation::Nan.to_string(), "nan");
+        assert_eq!(String::from(Elevation::Value(150.9)), "150.9");
+        assert_eq!(Elevation::from(8.5), Elevation::Value(8.5));
+        assert_eq!(Elevation::try_from("nan").unwrap(), Elevation::Nan);
+        // Only `nan` parses; numbers come through `From<f32>`.
+        assert_eq!(
+            Elevation::try_from("150").unwrap_err().to_string(),
+            "invalid elevation '150'"
+        );
+    }
+}

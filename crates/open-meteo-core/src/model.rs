@@ -581,3 +581,174 @@ impl From<Model> for String {
         value.to_string()
     }
 }
+
+impl Model {
+    /// Every model this crate knows, in declaration order.
+    pub const ALL: &'static [Model] = &[
+        Self::Undefined,
+        Self::BestMatch,
+        Self::GfsSeamless,
+        Self::GfsGlobal,
+        Self::GfsHrrr,
+        Self::MeteofranceSeamless,
+        Self::MeteofranceArpegeSeamless,
+        Self::MeteofranceArpegeWorld,
+        Self::MeteofranceArpegeEurope,
+        Self::MeteofranceAromeSeamless,
+        Self::MeteofranceAromeFrance,
+        Self::MeteofranceAromeFranceHd,
+        Self::JmaSeamless,
+        Self::JmaMsm,
+        Self::JmsGsm,
+        Self::JmaGsm,
+        Self::GemSeamless,
+        Self::GemGlobal,
+        Self::GemRegional,
+        Self::GemHrdpsContinental,
+        Self::IconSeamless,
+        Self::IconGlobal,
+        Self::IconEu,
+        Self::IconD2,
+        Self::EcmwfIfs04,
+        Self::MetnoNordic,
+        Self::Era5Seamless,
+        Self::Era5,
+        Self::Cerra,
+        Self::Era5Land,
+        Self::EcmwfIfs,
+        Self::Gwam,
+        Self::Ewam,
+        Self::GlofasSeamlessV3,
+        Self::GlofasForecastV3,
+        Self::GlofasConsolidatedV3,
+        Self::GlofasSeamlessV4,
+        Self::GlofasForecastV4,
+        Self::GlofasConsolidatedV4,
+        Self::Gfs025,
+        Self::Gfs05,
+        Self::CMCCCM2VHR4,
+        Self::FGOALSF3HHighressst,
+        Self::FGOALSF3H,
+        Self::HiramSITHR,
+        Self::MRIAGCM32S,
+        Self::ECEarth3pHR,
+        Self::MPIESM12XR,
+        Self::NICAM168S,
+        Self::CamsEurope,
+        Self::CamsGlobal,
+        Self::Cfsv2,
+        Self::Era5Ocean,
+        Self::CmaGrapesGlobal,
+        Self::BomAccessGlobal,
+        Self::BomAccessGlobalEnsemble,
+        Self::ArpaeCosmoSeamless,
+        Self::ArpaeCosmo2i,
+        Self::ArpaeCosmo2iRuc,
+        Self::ArpaeCosmo5m,
+        Self::EcmwfIfs025,
+        Self::EcmwfAifs025,
+        Self::Gfs013,
+        Self::GfsGraphcast025,
+        Self::EcmwfWam025,
+        Self::MeteofranceWave,
+        Self::MeteofranceCurrents,
+        Self::EcmwfWam025Ensemble,
+        Self::NcepGfswave025,
+        Self::NcepGefswave025,
+        Self::KnmiSeamless,
+        Self::KnmiHarmonieAromeEurope,
+        Self::KnmiHarmonieAromeNetherlands,
+        Self::DmiSeamless,
+        Self::DmiHarmonieAromeEurope,
+        Self::MetnoSeamless,
+        Self::Era5Ensemble,
+        Self::EcmwfIfsAnalysis,
+        Self::EcmwfIfsLongWindow,
+        Self::EcmwfIfsAnalysisLongWindow,
+        Self::UkmoGlobalDeterministic10km,
+        Self::UkmoUkDeterministic2km,
+        Self::UkmoSeamless,
+        Self::NcepGfswave016,
+        Self::NcepNbmConus,
+        Self::UkmoGlobalEnsemble20km,
+        Self::EcmwfAifs025Single,
+        Self::JmaJaxaHimawari,
+        Self::EumetsatSarah3,
+        Self::EumetsatLsaSafMsg,
+        Self::EumetsatLsaSafIodc,
+        Self::SatelliteRadiationSeamless,
+        Self::KmaGdps,
+        Self::KmaLdps,
+        Self::KmaSeamless,
+        Self::ItaliaMeteoArpaeIcon2i,
+        Self::UkmoUkEnsemble2km,
+        Self::MeteofranceAromeFranceHd15min,
+        Self::MeteofranceAromeFrance15min,
+        Self::MeteoswissIconCh1,
+        Self::MeteoswissIconCh2,
+        Self::MeteoswissIconCh1Ensemble,
+        Self::MeteoswissIconCh2Ensemble,
+        Self::MeteoswissIconSeamless,
+        Self::NcepNamConus,
+        Self::IconD2Ruc,
+        Self::EcmwfSeas5,
+        Self::EcmwfEc46,
+        Self::EcmwfSeasonalSeamless,
+        Self::EcmwfIfsSeamless,
+        Self::JmaJaxaMtgFci,
+        Self::GemHrdpsWest,
+        Self::EcmwfWam,
+        Self::NcepAigfs025,
+        Self::NcepAigefs025,
+        Self::NcepHgefs025EnsembleMean,
+        Self::EcmwfSeasonalEnsembleMeanSeamless,
+        Self::EcmwfSeas5EnsembleMean,
+        Self::EcmwfEc46EnsembleMean,
+        Self::NcepAigefs025EnsembleMean,
+        Self::DwdIconEpsEnsembleMeanSeamless,
+        Self::DwdIconEpsEnsembleMean,
+        Self::DwdIconEuEpsEnsembleMean,
+        Self::DwdIconD2EpsEnsembleMean,
+        Self::NcepGefsEnsembleMeanSeamless,
+        Self::NcepGefs025EnsembleMean,
+        Self::NcepGefs05EnsembleMean,
+        Self::EcmwfIfs025EnsembleMean,
+        Self::EcmwfAifs025EnsembleMean,
+        Self::MeteoswissIconCh1EnsembleMean,
+        Self::MeteoswissIconCh2EnsembleMean,
+        Self::CmcGemGepsEnsembleMean,
+        Self::UkmoGlobalEnsembleMean20km,
+        Self::UkmoUkEnsembleMean2km,
+    ];
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use alloc::collections::BTreeSet;
+
+    #[test]
+    fn every_model_round_trips_through_its_api_id() {
+        for model in Model::ALL {
+            let id = model.to_string();
+            assert_eq!(Model::try_from(id.as_str()), Ok(*model), "{id}");
+            assert_eq!(String::from(*model), id);
+        }
+    }
+
+    #[test]
+    fn api_ids_are_unique() {
+        let ids: BTreeSet<String> = Model::ALL.iter().map(ToString::to_string).collect();
+        assert_eq!(ids.len(), Model::ALL.len());
+    }
+
+    #[test]
+    fn unknown_ids_are_rejected() {
+        assert_eq!(
+            Model::try_from("not_a_model"),
+            Err(ConversionError::InvalidModel {
+                model: "not_a_model".into()
+            })
+        );
+    }
+}

@@ -24,3 +24,7 @@ fmt:
 fmt-check:
 	cargo fmt --all --check
 	dprint check
+
+.PHONY: coverage
+coverage:
+	cargo llvm-cov --workspace --all-features --ignore-filename-regex '(tests|examples)/' --fail-under-lines 100

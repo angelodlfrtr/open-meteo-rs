@@ -141,5 +141,6 @@ make clippy        # lints, all features and targets
 make test          # offline tests: recorded API answers and exact URLs
 make test-live     # smoke tests against the public API
 make check-no-std  # builds the core for a target without std
+make coverage      # line coverage report; fails below 100%
 make fmt           # dprint + cargo fmt
 ```

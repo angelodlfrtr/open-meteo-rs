@@ -294,3 +294,41 @@ fn elevation_is_one_value_per_location() {
     let body = include_bytes!("fixtures/elevation.json");
     assert_eq!(elevation::Options::parse(body).unwrap(), vec![38.0, 46.0]);
 }
+
+/// A body where `section` is present but has no `time`, so parsing that section fails.
+fn malformed(section: &str) -> Vec<u8> {
+    format!(r#"{{"{section}": {{"temperature_2m": [1.0]}}}}"#).into_bytes()
+}
+
+/// Runs `parse` on garbage and on a body with each of `sections` malformed in turn,
+/// so every section's error path is exercised.
+fn rejects_bad_bodies<T: std::fmt::Debug>(parse: fn(&[u8]) -> Result<T, Error>, sections: &[&str]) {
+    assert!(matches!(parse(b"<html>"), Err(Error::Json(_))));
+    for section in sections {
+        assert!(
+            matches!(parse(&malformed(section)), Err(Error::Malformed(_))),
+            "{section} should be rejected"
+        );
+    }
+}
+
+#[test]
+fn every_endpoint_rejects_malformed_bodies() {
+    rejects_bad_bodies(
+        forecast::Options::parse,
+        &["current", "minutely_15", "hourly", "daily"],
+    );
+    rejects_bad_bodies(air_quality::Options::parse, &["current", "hourly"]);
+    rejects_bad_bodies(marine::Options::parse, &["current", "hourly", "daily"]);
+    rejects_bad_bodies(ensemble::Options::parse, &["hourly"]);
+    rejects_bad_bodies(climate::Options::parse, &["daily"]);
+    rejects_bad_bodies(flood::Options::parse, &["daily"]);
+    rejects_bad_bodies(satellite_radiation::Options::parse, &["hourly"]);
+    rejects_bad_bodies(
+        seasonal::Options::parse,
+        &["six_hourly", "daily", "weekly", "monthly"],
+    );
+    rejects_bad_bodies(elevation::Options::parse, &[]);
+    rejects_bad_bodies(geocoding::Options::parse, &[]);
+    rejects_bad_bodies(geocoding::GetOptions::parse, &[]);
+}

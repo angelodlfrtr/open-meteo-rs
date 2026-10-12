@@ -23,3 +23,6 @@ jobs:
 
       - name: Check the core builds without std
         run: nix develop --command make check-no-std
+
+      - name: Check line coverage is 100%
+        run: nix develop --command make coverage

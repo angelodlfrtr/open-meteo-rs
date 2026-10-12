@@ -23,11 +23,12 @@ make clippy        # pedantic lints, all features and all targets; must be clean
 make test          # offline tests only; must pass before every commit
 make test-live     # ignored smoke tests against the public API; run after touching a client or an endpoint
 make check-no-std  # builds the core for wasm32v1-none; run after touching the core or its dependencies
+make coverage      # cargo-llvm-cov; fails below 100% line coverage, which CI enforces
 make fmt           # cargo fmt + dprint (TOML and Markdown)
 make fmt-check
 ```
 
-CI runs `fmt-check`, `clippy`, `test` and `check-no-std`. It has no network access to the API.
+CI runs `fmt-check`, `clippy`, `test`, `check-no-std` and `coverage`. It has no network access to the API.
 
 ## Layout of the core
 
@@ -55,7 +56,7 @@ CI runs `fmt-check`, `clippy`, `test` and `check-no-std`. It has no network acce
    into `crates/open-meteo-core/tests/fixtures/<name>.json`. Keep it small.
 6. Add a parse test in `tests/parse.rs` asserting concrete values, an exact-URL test in
    `tests/query.rs`, an ignored live test in `crates/open-meteo-rs/tests/live.rs`, a row in the
-   README endpoint table, and a changelog entry.
+   README endpoint table, a changelog entry, and a route in `crates/open-meteo-rs/tests/mock.rs`.
 
 ## Conventions
 
@@ -71,6 +72,9 @@ CI runs `fmt-check`, `clippy`, `test` and `check-no-std`. It has no network acce
 - `BTreeMap`, not `HashMap`: the core has no `std`, and ordered output keeps tests deterministic.
 - Error types are `thiserror` enums marked `#[non_exhaustive]`. Never `Box<dyn Error>`.
 - Tests that hit the network are `#[ignore = "talks to the public API"]`. Keep `make test` offline.
+- Line coverage is 100% and CI fails below it. Client code is covered by `tests/mock.rs`, a tiny
+  local HTTP server replaying the fixtures; parsing by the fixture tests; every `Model` and unit
+  variant by round-trip tests. New code comes with the tests that cover it.
 - Commits follow Conventional Commits: `feat(endpoints): ...`, `fix(core): ...`, `docs: ...`,
   `chore(workspace): ...`. One logical change per commit, each one green on its own.
 - The two crates share one version and are released together. Publish `open-meteo-core`

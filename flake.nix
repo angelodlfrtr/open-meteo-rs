@@ -17,6 +17,8 @@
       let
         pkgs = import nixpkgs { inherit system; };
         craneLib = crane.mkLib pkgs;
+        # cargo-llvm-cov needs llvm-cov and llvm-profdata from the same LLVM as rustc.
+        llvm = pkgs.rustc.llvmPackages.llvm;
       in
       {
         formatter = pkgs.nixfmt-rfc-style;
@@ -29,7 +31,10 @@
             pkg-config
             dprint
             gnumake
+            cargo-llvm-cov
           ];
+          LLVM_COV = "${llvm}/bin/llvm-cov";
+          LLVM_PROFDATA = "${llvm}/bin/llvm-profdata";
         };
       }
     );
