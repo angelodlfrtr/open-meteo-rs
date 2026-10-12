@@ -4,7 +4,10 @@
 //! pin the values a user would read, so a change in parsing shows up as a precise diff.
 
 use chrono::NaiveDate;
-use open_meteo_core::{air_quality, forecast, geocoding, Error, Request};
+use open_meteo_core::{
+    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation, Error,
+    Request,
+};
 use serde_json::json;
 
 fn local(y: i32, m: u32, d: u32, h: u32, min: u32) -> chrono::NaiveDateTime {
@@ -136,4 +139,118 @@ fn garbage_is_a_json_error() {
         forecast::Options::parse(b"<html>"),
         Err(Error::Json(_))
     ));
+}
+
+#[test]
+fn marine_current_hourly_and_daily() {
+    let body = include_bytes!("fixtures/marine.json");
+    let result = marine::Options::parse(body).unwrap();
+
+    let current = result.current.unwrap();
+    assert_eq!(current.datetime, local(2026, 10, 12, 7, 45));
+    assert_eq!(current.values["wave_height"].value, json!(0.3));
+    assert_eq!(current.values["wave_height"].unit.as_deref(), Some("m"));
+
+    let hourly = result.hourly.unwrap();
+    assert_eq!(hourly.len(), 24);
+    assert_eq!(hourly[0].datetime, local(2026, 10, 12, 0, 0));
+    assert_eq!(hourly[0].values["wave_height"].value, json!(0.5));
+    assert_eq!(hourly[0].values["wave_direction"].value, json!(331));
+
+    let daily = result.daily.unwrap();
+    assert_eq!(daily.len(), 1);
+    assert_eq!(daily[0].values["wave_height_max"].value, json!(0.5));
+}
+
+#[test]
+fn historical_forecast_is_forecast_shaped() {
+    let body = include_bytes!("fixtures/historical_forecast.json");
+    let result = forecast::Options::parse(body).unwrap();
+
+    let hourly = result.hourly.unwrap();
+    assert_eq!(hourly.len(), 48);
+    assert_eq!(hourly[0].datetime, local(2026, 9, 23, 0, 0));
+    assert_eq!(hourly[0].values["temperature_2m"].value, json!(10.3));
+}
+
+#[test]
+fn previous_runs_keep_lead_time_columns() {
+    let body = include_bytes!("fixtures/previous_runs.json");
+    let result = forecast::Options::parse(body).unwrap();
+
+    let hourly = result.hourly.unwrap();
+    assert_eq!(hourly.len(), 24);
+    assert_eq!(hourly[0].values["temperature_2m"].value, json!(9.6));
+    assert_eq!(
+        hourly[0].values["temperature_2m_previous_day1"].value,
+        json!(9.5)
+    );
+}
+
+#[test]
+fn ensemble_members_are_separate_variables() {
+    let body = include_bytes!("fixtures/ensemble.json");
+    let result = ensemble::Options::parse(body).unwrap();
+
+    let hourly = result.hourly.unwrap();
+    assert_eq!(hourly.len(), 24);
+    // control run + 40 members, `time` excluded
+    assert_eq!(hourly[0].values.len(), 40);
+    assert_eq!(hourly[0].values["temperature_2m"].value, json!(9.6));
+    assert_eq!(
+        hourly[0].values["temperature_2m_member01"].value,
+        json!(8.8)
+    );
+}
+
+#[test]
+fn climate_daily_per_model() {
+    let body = include_bytes!("fixtures/climate.json");
+    let result = climate::Options::parse(body).unwrap();
+
+    let daily = result.daily.unwrap();
+    assert_eq!(daily.len(), 3);
+    assert_eq!(daily[0].date, NaiveDate::from_ymd_opt(2030, 1, 1).unwrap());
+    // With several models, each variable is suffixed with the model name.
+    let mri = &daily[0].values["temperature_2m_max_MRI_AGCM3_2_S"];
+    assert_eq!(mri.value, json!(2.2));
+    assert_eq!(mri.unit.as_deref(), Some("°C"));
+    let ec_earth = &daily[0].values["temperature_2m_max_EC_Earth3P_HR"];
+    assert_eq!(ec_earth.value, json!(1.7));
+}
+
+#[test]
+fn flood_daily_discharge() {
+    let body = include_bytes!("fixtures/flood.json");
+    let result = flood::Options::parse(body).unwrap();
+
+    let daily = result.daily.unwrap();
+    assert_eq!(daily.len(), 3);
+    assert_eq!(
+        daily[0].date,
+        NaiveDate::from_ymd_opt(2026, 10, 12).unwrap()
+    );
+    assert_eq!(daily[0].values["river_discharge"].value, json!(8.08));
+    assert_eq!(
+        daily[0].values["river_discharge"].unit.as_deref(),
+        Some("m³/s")
+    );
+}
+
+#[test]
+fn satellite_radiation_keeps_nulls_for_missing_hours() {
+    let body = include_bytes!("fixtures/satellite_radiation.json");
+    let result = satellite_radiation::Options::parse(body).unwrap();
+
+    let hourly = result.hourly.unwrap();
+    assert_eq!(hourly.len(), 24);
+    assert_eq!(hourly[0].datetime, local(2026, 10, 11, 0, 0));
+    assert_eq!(hourly[0].values["shortwave_radiation"].value, json!(0.0));
+    assert_eq!(hourly[8].values["shortwave_radiation"].value, json!(128.2));
+    assert_eq!(
+        hourly[0].values["shortwave_radiation"].unit.as_deref(),
+        Some("W/m²")
+    );
+    // Hours not yet observed are null, not dropped.
+    assert_eq!(hourly[23].values["shortwave_radiation"].value, json!(null));
 }

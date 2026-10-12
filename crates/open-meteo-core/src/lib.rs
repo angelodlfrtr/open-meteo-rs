@@ -41,8 +41,13 @@ mod response;
 mod units;
 
 pub mod air_quality;
+pub mod climate;
+pub mod ensemble;
+pub mod flood;
 pub mod forecast;
 pub mod geocoding;
+pub mod marine;
+pub mod satellite_radiation;
 
 pub use endpoints::Endpoints;
 pub use error::{ConversionError, Error};
