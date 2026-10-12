@@ -29,7 +29,7 @@ impl Options {
         self
     }
 
-    fn into_params(self) -> Vec<(String, String)> {
+    pub(crate) fn into_params(self) -> Vec<(String, String)> {
         let mut params = Vec::new();
 
         if let Some(v) = self.name {

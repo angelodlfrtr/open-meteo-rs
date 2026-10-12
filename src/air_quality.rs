@@ -29,7 +29,7 @@ pub struct Options {
 }
 
 impl Options {
-    fn into_params(self) -> Vec<(String, String)> {
+    pub(crate) fn into_params(self) -> Vec<(String, String)> {
         let mut params: Vec<(String, String)> = Vec::new();
 
         params.push(("latitude".into(), self.location.lat.to_string()));
@@ -81,7 +81,7 @@ impl Options {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct ApiAirQualityResponse {
+pub(crate) struct ApiAirQualityResponse {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub generationtime_ms: Option<f64>,
@@ -101,7 +101,9 @@ pub struct AirQualityResult {
     pub hourly: Option<Vec<ForecastResultHourly>>,
 }
 
-fn api_to_result(api_res: ApiAirQualityResponse) -> Result<AirQualityResult, Box<dyn Error>> {
+pub(crate) fn api_to_result(
+    api_res: ApiAirQualityResponse,
+) -> Result<AirQualityResult, Box<dyn Error>> {
     let mut result = AirQualityResult::default();
 
     if let Some(current) = api_res.current {

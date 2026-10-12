@@ -1,10 +1,10 @@
 .PHONY: clippy
 clippy:
-	cargo clippy
+	cargo clippy --all-features --all-targets
 
 .PHONY: test
 test:
-	cargo test
+	cargo test --all-features
 
 .PHONY: fmt
 fmt:

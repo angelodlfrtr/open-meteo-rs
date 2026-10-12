@@ -1,13 +1,16 @@
 use std::time::Duration;
 
-const DEFAULT_FORECAST_ENDPOINT: &str = "https://api.open-meteo.com/v1/";
-const DEFAULT_ARCHIVE_ENDPOINT: &str = "https://archive-api.open-meteo.com/v1/";
-const DEFAULT_GEOCODING_ENDPOINT: &str = "https://geocoding-api.open-meteo.com/v1/search";
-const DEFAULT_AIR_QUALITY_ENDPOINT: &str = "https://air-quality-api.open-meteo.com/v1/air-quality";
+pub(crate) const DEFAULT_FORECAST_ENDPOINT: &str = "https://api.open-meteo.com/v1/";
+pub(crate) const DEFAULT_ARCHIVE_ENDPOINT: &str = "https://archive-api.open-meteo.com/v1/";
+pub(crate) const DEFAULT_GEOCODING_ENDPOINT: &str =
+    "https://geocoding-api.open-meteo.com/v1/search";
+pub(crate) const DEFAULT_AIR_QUALITY_ENDPOINT: &str =
+    "https://air-quality-api.open-meteo.com/v1/air-quality";
 
-const DEFAULT_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
-const DEFAULT_TIMEOUT: Duration = Duration::from_millis(5000);
-const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_millis(2000);
+pub(crate) const DEFAULT_USER_AGENT: &str =
+    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+pub(crate) const DEFAULT_TIMEOUT: Duration = Duration::from_millis(5000);
+pub(crate) const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_millis(2000);
 
 #[derive(Debug)]
 pub struct Client {

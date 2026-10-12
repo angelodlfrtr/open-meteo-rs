@@ -682,7 +682,7 @@ impl Default for Options {
 
 impl Options {
     #[must_use]
-    pub fn as_params(self) -> Vec<(String, String)> {
+    pub(crate) fn into_params(self) -> Vec<(String, String)> {
         let mut params = Vec::new();
 
         params.push(("latitude".into(), self.location.lat.to_string()));
@@ -771,7 +771,7 @@ impl Options {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct ApiForecastResponse {
+pub(crate) struct ApiForecastResponse {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub elevation: Option<f32>,
@@ -839,186 +839,17 @@ impl client::Client {
             .await
     }
 
-    #[allow(clippy::too_many_lines)]
     async fn request(
         &self,
         opts: Options,
         api_endpoint: &str,
     ) -> Result<ForecastResult, Box<dyn Error>> {
-        let url = reqwest::Url::parse_with_params(api_endpoint, opts.as_params())?;
+        let url = reqwest::Url::parse_with_params(api_endpoint, opts.into_params())?;
         let res = self.http_client.get(url).send().await?;
 
         if res.status().is_success() {
             let api_res = res.json::<ApiForecastResponse>().await?;
-            let mut result = ForecastResult::default();
-
-            // Current weather
-            if let Some(current) = api_res.current {
-                let api_units = api_res.current_units.clone();
-                // Iterates on values
-                let mut current_result = CurrentResult::default();
-                for (k, v) in &current {
-                    if k == "time" {
-                        current_result.datetime = match v.as_i64() {
-                            Some(v) => unix_time_to_naive_datetime(v, 0),
-                            None => {
-                                return Err("cannot decode properly json input".into());
-                            }
-                        };
-                        continue;
-                    }
-                    // Try to find the unit
-                    let unit = api_units.as_ref().and_then(|units| units.get(k).cloned());
-                    let value = v.clone();
-                    current_result
-                        .values
-                        .insert(k.clone(), ForecastResultItem { unit, value });
-                }
-
-                // Push current rec
-                result.current = Some(current_result);
-            }
-
-            // Get utc offset
-            let utc_offset_seconds = api_res.utc_offset_seconds.unwrap_or(0);
-
-            // Minutely 15
-            if let Some(minutely_15) = api_res.minutely_15 {
-                if let Some(minutely_15_date_times) =
-                    extract_times(&minutely_15, utc_offset_seconds)?
-                {
-                    if let Some(minutely_15_units) = api_res.minutely_15_units {
-                        let mut minutely_15_result = Vec::new();
-
-                        // Iterate on times
-                        for (idx, time) in minutely_15_date_times.iter().enumerate() {
-                            let mut minutely_15_rec = ForecastResultMinutely15 {
-                                datetime: *time,
-                                ..Default::default()
-                            };
-
-                            // Iterates on values
-                            for (k, v) in &minutely_15 {
-                                if k == "time" {
-                                    continue;
-                                }
-
-                                let mut item = ForecastResultItem::default();
-                                let Some(v_arr) = v.as_array() else {
-                                    return Err("cannot decode properly json input".into());
-                                };
-
-                                let v_val = v_arr[idx].clone();
-                                item.value = v_val;
-
-                                // Try to find unit
-                                if let Some(unit) = minutely_15_units.get(k) {
-                                    item.unit = Some(unit.clone());
-                                }
-
-                                // Push to minutely_15 record
-                                minutely_15_rec.values.insert(k.clone(), item);
-                            }
-
-                            // Push minutely_15 rec
-                            minutely_15_result.push(minutely_15_rec);
-                        }
-
-                        result.minutely_15 = Some(minutely_15_result);
-                    }
-                }
-            }
-
-            // Hourly
-            if let Some(hourly) = api_res.hourly {
-                if let Some(hourly_date_times) = extract_times(&hourly, utc_offset_seconds)? {
-                    if let Some(hourly_units) = api_res.hourly_units {
-                        let mut hourly_result = Vec::new();
-
-                        // Iterate on times
-                        for (idx, time) in hourly_date_times.iter().enumerate() {
-                            let mut hourly_rec = forecast::ForecastResultHourly {
-                                datetime: *time,
-                                ..Default::default()
-                            };
-
-                            // Iterates on values
-                            for (k, v) in &hourly {
-                                if k == "time" {
-                                    continue;
-                                }
-
-                                let mut item = ForecastResultItem::default();
-                                let Some(v_arr) = v.as_array() else {
-                                    return Err("cannot decode properly json input".into());
-                                };
-
-                                let v_val = v_arr[idx].clone();
-                                item.value = v_val;
-
-                                // Try to find unit
-                                if let Some(unit) = hourly_units.get(k) {
-                                    item.unit = Some(unit.clone());
-                                }
-
-                                // Push to hourly record
-                                hourly_rec.values.insert(k.clone(), item);
-                            }
-
-                            // Push hourly rec
-                            hourly_result.push(hourly_rec);
-                        }
-
-                        result.hourly = Some(hourly_result);
-                    }
-                }
-            }
-
-            // Daily
-            if let Some(daily) = api_res.daily {
-                if let Some(daily_date_times) = extract_times(&daily, utc_offset_seconds)? {
-                    if let Some(daily_units) = api_res.daily_units {
-                        let mut daily_result = Vec::new();
-
-                        // Iterate on times
-                        for (idx, time) in daily_date_times.iter().enumerate() {
-                            let mut daily_rec = forecast::ForecastResultDaily {
-                                date: (*time).date(),
-                                ..Default::default()
-                            };
-
-                            // Iterates on values
-                            for (k, v) in &daily {
-                                if k == "time" {
-                                    continue;
-                                }
-
-                                let mut item = ForecastResultItem::default();
-                                let Some(v_arr) = v.as_array() else {
-                                    return Err("cannot decode properly json input".into());
-                                };
-                                let v_val = v_arr[idx].clone();
-                                item.value = v_val;
-
-                                // Try to find unit
-                                if let Some(unit) = daily_units.get(k) {
-                                    item.unit = Some(unit.clone());
-                                }
-
-                                // Push to daily record
-                                daily_rec.values.insert(k.clone(), item);
-                            }
-
-                            // Push daily rec
-                            daily_result.push(daily_rec);
-                        }
-
-                        result.daily = Some(daily_result);
-                    }
-                }
-            }
-
-            return Ok(result);
+            return api_to_result(api_res);
         }
 
         Err(Box::new(errors::ClientError::InvalidResponseStatus {
@@ -1026,6 +857,180 @@ impl client::Client {
             text: res.text().await.unwrap_or(String::new()),
         }))
     }
+}
+
+/// Convert the raw API response into a [`ForecastResult`].
+#[allow(clippy::too_many_lines)]
+pub(crate) fn api_to_result(
+    api_res: ApiForecastResponse,
+) -> Result<ForecastResult, Box<dyn Error>> {
+    let mut result = ForecastResult::default();
+
+    // Current weather
+    if let Some(current) = api_res.current {
+        let api_units = api_res.current_units.clone();
+        // Iterates on values
+        let mut current_result = CurrentResult::default();
+        for (k, v) in &current {
+            if k == "time" {
+                current_result.datetime = match v.as_i64() {
+                    Some(v) => unix_time_to_naive_datetime(v, 0),
+                    None => {
+                        return Err("cannot decode properly json input".into());
+                    }
+                };
+                continue;
+            }
+            // Try to find the unit
+            let unit = api_units.as_ref().and_then(|units| units.get(k).cloned());
+            let value = v.clone();
+            current_result
+                .values
+                .insert(k.clone(), ForecastResultItem { unit, value });
+        }
+
+        // Push current rec
+        result.current = Some(current_result);
+    }
+
+    // Get utc offset
+    let utc_offset_seconds = api_res.utc_offset_seconds.unwrap_or(0);
+
+    // Minutely 15
+    if let Some(minutely_15) = api_res.minutely_15 {
+        if let Some(minutely_15_date_times) = extract_times(&minutely_15, utc_offset_seconds)? {
+            if let Some(minutely_15_units) = api_res.minutely_15_units {
+                let mut minutely_15_result = Vec::new();
+
+                // Iterate on times
+                for (idx, time) in minutely_15_date_times.iter().enumerate() {
+                    let mut minutely_15_rec = ForecastResultMinutely15 {
+                        datetime: *time,
+                        ..Default::default()
+                    };
+
+                    // Iterates on values
+                    for (k, v) in &minutely_15 {
+                        if k == "time" {
+                            continue;
+                        }
+
+                        let mut item = ForecastResultItem::default();
+                        let Some(v_arr) = v.as_array() else {
+                            return Err("cannot decode properly json input".into());
+                        };
+
+                        let v_val = v_arr[idx].clone();
+                        item.value = v_val;
+
+                        // Try to find unit
+                        if let Some(unit) = minutely_15_units.get(k) {
+                            item.unit = Some(unit.clone());
+                        }
+
+                        // Push to minutely_15 record
+                        minutely_15_rec.values.insert(k.clone(), item);
+                    }
+
+                    // Push minutely_15 rec
+                    minutely_15_result.push(minutely_15_rec);
+                }
+
+                result.minutely_15 = Some(minutely_15_result);
+            }
+        }
+    }
+
+    // Hourly
+    if let Some(hourly) = api_res.hourly {
+        if let Some(hourly_date_times) = extract_times(&hourly, utc_offset_seconds)? {
+            if let Some(hourly_units) = api_res.hourly_units {
+                let mut hourly_result = Vec::new();
+
+                // Iterate on times
+                for (idx, time) in hourly_date_times.iter().enumerate() {
+                    let mut hourly_rec = forecast::ForecastResultHourly {
+                        datetime: *time,
+                        ..Default::default()
+                    };
+
+                    // Iterates on values
+                    for (k, v) in &hourly {
+                        if k == "time" {
+                            continue;
+                        }
+
+                        let mut item = ForecastResultItem::default();
+                        let Some(v_arr) = v.as_array() else {
+                            return Err("cannot decode properly json input".into());
+                        };
+
+                        let v_val = v_arr[idx].clone();
+                        item.value = v_val;
+
+                        // Try to find unit
+                        if let Some(unit) = hourly_units.get(k) {
+                            item.unit = Some(unit.clone());
+                        }
+
+                        // Push to hourly record
+                        hourly_rec.values.insert(k.clone(), item);
+                    }
+
+                    // Push hourly rec
+                    hourly_result.push(hourly_rec);
+                }
+
+                result.hourly = Some(hourly_result);
+            }
+        }
+    }
+
+    // Daily
+    if let Some(daily) = api_res.daily {
+        if let Some(daily_date_times) = extract_times(&daily, utc_offset_seconds)? {
+            if let Some(daily_units) = api_res.daily_units {
+                let mut daily_result = Vec::new();
+
+                // Iterate on times
+                for (idx, time) in daily_date_times.iter().enumerate() {
+                    let mut daily_rec = forecast::ForecastResultDaily {
+                        date: (*time).date(),
+                        ..Default::default()
+                    };
+
+                    // Iterates on values
+                    for (k, v) in &daily {
+                        if k == "time" {
+                            continue;
+                        }
+
+                        let mut item = ForecastResultItem::default();
+                        let Some(v_arr) = v.as_array() else {
+                            return Err("cannot decode properly json input".into());
+                        };
+                        let v_val = v_arr[idx].clone();
+                        item.value = v_val;
+
+                        // Try to find unit
+                        if let Some(unit) = daily_units.get(k) {
+                            item.unit = Some(unit.clone());
+                        }
+
+                        // Push to daily record
+                        daily_rec.values.insert(k.clone(), item);
+                    }
+
+                    // Push daily rec
+                    daily_result.push(daily_rec);
+                }
+
+                result.daily = Some(daily_result);
+            }
+        }
+    }
+
+    Ok(result)
 }
 
 #[must_use]

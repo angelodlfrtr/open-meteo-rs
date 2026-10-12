@@ -98,3 +98,29 @@ async fn main() {
     println!("{:#?}", res);
 }
 ```
+
+## Blocking client
+
+The crate is async by default. A synchronous client is available behind the `blocking` feature:
+
+```sh
+cargo add open-meteo-rs --features blocking
+```
+
+```rust
+fn main() {
+    let client = open_meteo_rs::blocking::Client::new();
+    let mut opts = open_meteo_rs::forecast::Options::default();
+    opts.location = open_meteo_rs::Location {
+        lat: 48.864716,
+        lng: 2.349014,
+    };
+    opts.hourly.push("temperature_2m".into());
+
+    let res = client.forecast(opts).unwrap();
+
+    println!("{:#?}", res);
+}
+```
+
+The blocking client must not be used from inside an async runtime, or it will panic.

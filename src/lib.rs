@@ -1,5 +1,7 @@
 #![deny(clippy::all, clippy::perf, clippy::complexity, clippy::pedantic)]
 
+#[cfg(feature = "blocking")]
+pub mod blocking;
 mod client;
 mod errors;
 mod location;
