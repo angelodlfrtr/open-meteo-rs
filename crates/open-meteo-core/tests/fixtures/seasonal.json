@@ -1,0 +1,293 @@
+{
+  "latitude": 52.412178,
+  "longitude": 13.695653,
+  "generationtime_ms": 0.6719827651977539,
+  "utc_offset_seconds": 0,
+  "timezone": "GMT",
+  "timezone_abbreviation": "GMT",
+  "elevation": 38.0,
+  "daily_units": {
+    "time": "unixtime",
+    "temperature_2m_max": "°C",
+    "temperature_2m_max_member01": "°C",
+    "temperature_2m_max_member02": "°C",
+    "temperature_2m_max_member03": "°C",
+    "temperature_2m_max_member04": "°C",
+    "temperature_2m_max_member05": "°C",
+    "temperature_2m_max_member06": "°C",
+    "temperature_2m_max_member07": "°C",
+    "temperature_2m_max_member08": "°C",
+    "temperature_2m_max_member09": "°C",
+    "temperature_2m_max_member10": "°C",
+    "temperature_2m_max_member11": "°C",
+    "temperature_2m_max_member12": "°C",
+    "temperature_2m_max_member13": "°C",
+    "temperature_2m_max_member14": "°C",
+    "temperature_2m_max_member15": "°C",
+    "temperature_2m_max_member16": "°C",
+    "temperature_2m_max_member17": "°C",
+    "temperature_2m_max_member18": "°C",
+    "temperature_2m_max_member19": "°C",
+    "temperature_2m_max_member20": "°C",
+    "temperature_2m_max_member21": "°C",
+    "temperature_2m_max_member22": "°C",
+    "temperature_2m_max_member23": "°C",
+    "temperature_2m_max_member24": "°C",
+    "temperature_2m_max_member25": "°C",
+    "temperature_2m_max_member26": "°C",
+    "temperature_2m_max_member27": "°C",
+    "temperature_2m_max_member28": "°C",
+    "temperature_2m_max_member29": "°C",
+    "temperature_2m_max_member30": "°C",
+    "temperature_2m_max_member31": "°C",
+    "temperature_2m_max_member32": "°C",
+    "temperature_2m_max_member33": "°C",
+    "temperature_2m_max_member34": "°C",
+    "temperature_2m_max_member35": "°C",
+    "temperature_2m_max_member36": "°C",
+    "temperature_2m_max_member37": "°C",
+    "temperature_2m_max_member38": "°C",
+    "temperature_2m_max_member39": "°C",
+    "temperature_2m_max_member40": "°C",
+    "temperature_2m_max_member41": "°C",
+    "temperature_2m_max_member42": "°C",
+    "temperature_2m_max_member43": "°C",
+    "temperature_2m_max_member44": "°C",
+    "temperature_2m_max_member45": "°C",
+    "temperature_2m_max_member46": "°C",
+    "temperature_2m_max_member47": "°C",
+    "temperature_2m_max_member48": "°C",
+    "temperature_2m_max_member49": "°C",
+    "temperature_2m_max_member50": "°C"
+  },
+  "daily": {
+    "time": [
+      1791763200,
+      1791849600
+    ],
+    "temperature_2m_max": [
+      12.9,
+      14.1
+    ],
+    "temperature_2m_max_member01": [
+      12.8,
+      14.7
+    ],
+    "temperature_2m_max_member02": [
+      12.3,
+      14.9
+    ],
+    "temperature_2m_max_member03": [
+      12.6,
+      14.0
+    ],
+    "temperature_2m_max_member04": [
+      11.9,
+      13.4
+    ],
+    "temperature_2m_max_member05": [
+      12.7,
+      14.7
+    ],
+    "temperature_2m_max_member06": [
+      12.2,
+      13.4
+    ],
+    "temperature_2m_max_member07": [
+      11.9,
+      14.2
+    ],
+    "temperature_2m_max_member08": [
+      12.5,
+      14.9
+    ],
+    "temperature_2m_max_member09": [
+      13.1,
+      14.5
+    ],
+    "temperature_2m_max_member10": [
+      12.8,
+      13.4
+    ],
+    "temperature_2m_max_member11": [
+      12.8,
+      14.5
+    ],
+    "temperature_2m_max_member12": [
+      13.2,
+      14.1
+    ],
+    "temperature_2m_max_member13": [
+      11.9,
+      12.5
+    ],
+    "temperature_2m_max_member14": [
+      12.4,
+      13.5
+    ],
+    "temperature_2m_max_member15": [
+      12.8,
+      15.0
+    ],
+    "temperature_2m_max_member16": [
+      12.6,
+      13.8
+    ],
+    "temperature_2m_max_member17": [
+      12.8,
+      14.0
+    ],
+    "temperature_2m_max_member18": [
+      13.0,
+      14.4
+    ],
+    "temperature_2m_max_member19": [
+      12.5,
+      13.5
+    ],
+    "temperature_2m_max_member20": [
+      12.4,
+      13.8
+    ],
+    "temperature_2m_max_member21": [
+      13.0,
+      13.9
+    ],
+    "temperature_2m_max_member22": [
+      13.2,
+      13.7
+    ],
+    "temperature_2m_max_member23": [
+      12.6,
+      13.6
+    ],
+    "temperature_2m_max_member24": [
+      12.8,
+      12.8
+    ],
+    "temperature_2m_max_member25": [
+      13.2,
+      15.0
+    ],
+    "temperature_2m_max_member26": [
+      12.7,
+      14.4
+    ],
+    "temperature_2m_max_member27": [
+      12.1,
+      13.3
+    ],
+    "temperature_2m_max_member28": [
+      12.8,
+      14.1
+    ],
+    "temperature_2m_max_member29": [
+      12.7,
+      14.3
+    ],
+    "temperature_2m_max_member30": [
+      12.8,
+      14.8
+    ],
+    "temperature_2m_max_member31": [
+      11.9,
+      13.8
+    ],
+    "temperature_2m_max_member32": [
+      12.7,
+      13.2
+    ],
+    "temperature_2m_max_member33": [
+      12.7,
+      13.5
+    ],
+    "temperature_2m_max_member34": [
+      11.8,
+      12.7
+    ],
+    "temperature_2m_max_member35": [
+      12.4,
+      14.0
+    ],
+    "temperature_2m_max_member36": [
+      13.0,
+      14.1
+    ],
+    "temperature_2m_max_member37": [
+      12.2,
+      13.8
+    ],
+    "temperature_2m_max_member38": [
+      12.4,
+      12.5
+    ],
+    "temperature_2m_max_member39": [
+      12.7,
+      13.9
+    ],
+    "temperature_2m_max_member40": [
+      12.1,
+      14.1
+    ],
+    "temperature_2m_max_member41": [
+      12.9,
+      13.7
+    ],
+    "temperature_2m_max_member42": [
+      12.7,
+      14.4
+    ],
+    "temperature_2m_max_member43": [
+      12.8,
+      13.7
+    ],
+    "temperature_2m_max_member44": [
+      12.6,
+      14.0
+    ],
+    "temperature_2m_max_member45": [
+      12.5,
+      13.3
+    ],
+    "temperature_2m_max_member46": [
+      12.7,
+      14.1
+    ],
+    "temperature_2m_max_member47": [
+      13.3,
+      14.4
+    ],
+    "temperature_2m_max_member48": [
+      12.5,
+      13.5
+    ],
+    "temperature_2m_max_member49": [
+      12.1,
+      13.4
+    ],
+    "temperature_2m_max_member50": [
+      12.3,
+      13.5
+    ]
+  },
+  "weekly_units": {
+    "time": "unixtime",
+    "temperature_2m_mean": "°C"
+  },
+  "weekly": {
+    "time": [
+      1791763200
+    ],
+    "temperature_2m_mean": [
+      10.2
+    ]
+  },
+  "monthly_units": {
+    "time": "unixtime",
+    "temperature_2m_mean": "°C"
+  },
+  "monthly": {
+    "time": [],
+    "temperature_2m_mean": []
+  }
+}

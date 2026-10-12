@@ -50,8 +50,6 @@ type Units = BTreeMap<String, String>;
 type Row = (NaiveDateTime, BTreeMap<String, Measurement>);
 
 /// The envelope of every time-series endpoint, exactly as the API sends it.
-// TODO(seasonal): drop once the seasonal endpoint reads the remaining sections.
-#[allow(dead_code)]
 #[derive(Debug, Default, Deserialize)]
 pub(crate) struct RawResponse {
     #[serde(default)]
@@ -72,8 +70,6 @@ pub(crate) struct RawResponse {
     monthly_units: Option<Units>,
 }
 
-// TODO(seasonal): drop once the seasonal endpoint reads the remaining sections.
-#[allow(dead_code)]
 impl RawResponse {
     pub(crate) fn from_json(body: &[u8]) -> Result<Self, Error> {
         Ok(serde_json::from_slice(body)?)

@@ -5,8 +5,8 @@
 
 use chrono::NaiveDate;
 use open_meteo_core::{
-    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation, Error,
-    Request,
+    air_quality, climate, elevation, ensemble, flood, forecast, geocoding, marine,
+    satellite_radiation, seasonal, Error, Request,
 };
 use serde_json::json;
 
@@ -253,4 +253,44 @@ fn satellite_radiation_keeps_nulls_for_missing_hours() {
     );
     // Hours not yet observed are null, not dropped.
     assert_eq!(hourly[23].values["shortwave_radiation"].value, json!(null));
+}
+
+#[test]
+fn seasonal_daily_weekly_and_monthly() {
+    let body = include_bytes!("fixtures/seasonal.json");
+    let result = seasonal::Options::parse(body).unwrap();
+
+    // Not requested with a resolution the models provide: absent, not an error.
+    assert!(result.six_hourly.is_none());
+
+    let daily = result.daily.unwrap();
+    assert_eq!(daily.len(), 2);
+    assert_eq!(
+        daily[0].date,
+        NaiveDate::from_ymd_opt(2026, 10, 12).unwrap()
+    );
+    assert_eq!(daily[0].values["temperature_2m_max"].value, json!(12.9));
+    // Members ride along as suffixed variables: control + 50 members.
+    assert_eq!(daily[0].values.len(), 51);
+
+    let weekly = result.weekly.unwrap();
+    assert_eq!(weekly.len(), 1);
+    assert_eq!(
+        weekly[0].date,
+        NaiveDate::from_ymd_opt(2026, 10, 12).unwrap()
+    );
+    assert_eq!(weekly[0].values["temperature_2m_mean"].value, json!(10.2));
+    assert_eq!(
+        weekly[0].values["temperature_2m_mean"].unit.as_deref(),
+        Some("°C")
+    );
+
+    // A section the API returned with empty columns is an empty list, not `None`.
+    assert_eq!(result.monthly.unwrap().len(), 0);
+}
+
+#[test]
+fn elevation_is_one_value_per_location() {
+    let body = include_bytes!("fixtures/elevation.json");
+    assert_eq!(elevation::Options::parse(body).unwrap(), vec![38.0, 46.0]);
 }

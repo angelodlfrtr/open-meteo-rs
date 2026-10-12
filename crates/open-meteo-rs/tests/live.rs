@@ -3,8 +3,8 @@
 
 use chrono::{Duration, NaiveDate, Utc};
 use open_meteo_rs::{
-    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation,
-    Client, Location, Model,
+    air_quality, climate, elevation, ensemble, flood, forecast, geocoding, marine,
+    satellite_radiation, seasonal, Client, Location, Model,
 };
 
 fn berlin_forecast() -> forecast::Options {
@@ -228,6 +228,42 @@ async fn satellite_radiation() {
 
     let result = Client::new().satellite_radiation(options).await.unwrap();
     assert_eq!(result.hourly.unwrap().len(), 24);
+}
+
+#[tokio::test]
+#[ignore = "talks to the public API"]
+async fn seasonal() {
+    let options = seasonal::Options {
+        daily: vec!["temperature_2m_max".into()],
+        weekly: vec!["temperature_2m_mean".into()],
+        forecast_days: Some(14),
+        ..Default::default()
+    };
+
+    let result = Client::new().seasonal(options).await.unwrap();
+    assert_eq!(result.daily.unwrap().len(), 14);
+    assert!(!result.weekly.unwrap().is_empty());
+}
+
+#[tokio::test]
+#[ignore = "talks to the public API"]
+async fn elevation() {
+    let options = elevation::Options {
+        locations: vec![
+            Location::default(),
+            Location {
+                lat: 48.85,
+                lng: 2.35,
+            },
+        ],
+        apikey: None,
+    };
+
+    let elevations = Client::new().elevation(options).await.unwrap();
+    assert_eq!(elevations.len(), 2);
+    assert!(elevations
+        .iter()
+        .all(|metres| (0.0..9000.0).contains(metres)));
 }
 
 #[cfg(feature = "blocking")]

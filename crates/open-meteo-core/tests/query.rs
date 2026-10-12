@@ -2,8 +2,9 @@
 
 use chrono::NaiveDate;
 use open_meteo_core::{
-    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation, url,
-    CellSelection, Endpoints, LengthUnit, Location, Model, TemporalResolution,
+    air_quality, climate, elevation, ensemble, flood, forecast, geocoding, marine,
+    satellite_radiation, seasonal, url, CellSelection, Endpoints, LengthUnit, Location, Model,
+    TemporalResolution,
 };
 
 fn date(y: i32, m: u32, d: u32) -> NaiveDate {
@@ -213,5 +214,51 @@ fn satellite_radiation() {
          &hourly=shortwave_radiation,global_tilted_irradiance\
          &models=satellite_radiation_seamless&temporal_resolution=native&tilt=35&azimuth=-10\
          &past_days=1&forecast_days=0"
+    );
+}
+
+#[test]
+fn seasonal() {
+    let options = seasonal::Options {
+        daily: vec!["temperature_2m_max".into()],
+        weekly: vec!["temperature_2m_mean".into()],
+        monthly: vec!["temperature_2m_mean".into()],
+        models: vec![Model::EcmwfSeas5],
+        forecast_days: Some(45),
+        ..Default::default()
+    };
+
+    assert_eq!(
+        url(&Endpoints::default().seasonal, &options),
+        "https://seasonal-api.open-meteo.com/v1/seasonal\
+         ?latitude=52.52&longitude=13.41&timeformat=unixtime&daily=temperature_2m_max\
+         &weekly=temperature_2m_mean&monthly=temperature_2m_mean&models=ecmwf_seas5\
+         &forecast_days=45"
+    );
+}
+
+#[test]
+fn elevation() {
+    let options = elevation::Options {
+        locations: vec![
+            Location::default(),
+            Location {
+                lat: 48.85,
+                lng: 2.35,
+            },
+        ],
+        apikey: None,
+    };
+
+    assert_eq!(
+        url(&Endpoints::default().elevation, &options),
+        "https://api.open-meteo.com/v1/elevation?latitude=52.52,48.85&longitude=13.41,2.35"
+    );
+    assert_eq!(
+        url(
+            &Endpoints::default().elevation,
+            &elevation::Options::single(Location::default())
+        ),
+        "https://api.open-meteo.com/v1/elevation?latitude=52.52&longitude=13.41"
     );
 }

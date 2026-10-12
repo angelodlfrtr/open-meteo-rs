@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use open_meteo_core::{
-    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation,
-    Endpoints, Error as ApiError, Request,
+    air_quality, climate, elevation, ensemble, flood, forecast, geocoding, marine,
+    satellite_radiation, seasonal, Endpoints, Error as ApiError, Request,
 };
 
 use crate::Result;
@@ -202,6 +202,24 @@ impl Client {
         opts: satellite_radiation::Options,
     ) -> Result<satellite_radiation::SatelliteRadiationResult> {
         self.send(&self.endpoints.satellite_radiation, &opts).await
+    }
+
+    /// Seasonal forecasts, weeks to months ahead.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn seasonal(&self, opts: seasonal::Options) -> Result<seasonal::SeasonalResult> {
+        self.send(&self.endpoints.seasonal, &opts).await
+    }
+
+    /// Terrain elevation in metres, one value per requested location.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn elevation(&self, opts: elevation::Options) -> Result<Vec<f64>> {
+        self.send(&self.endpoints.elevation, &opts).await
     }
 }
 
