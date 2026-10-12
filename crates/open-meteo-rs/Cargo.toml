@@ -1,0 +1,34 @@
+[package]
+name = "open-meteo-rs"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license-file.workspace = true
+readme = "../../README.md"
+repository.workspace = true
+rust-version.workspace = true
+description = "HTTP client for open-meteo.com api"
+
+[features]
+default = []
+# Expose a synchronous client under `open_meteo_rs::blocking`.
+blocking = ["reqwest/blocking"]
+
+[dependencies]
+chrono = { workspace = true, features = ["std", "clock", "serde"] }
+chrono-tz.workspace = true
+reqwest.workspace = true
+serde = { workspace = true, features = ["std", "derive"] }
+serde_json = { workspace = true, features = ["std"] }
+snafu.workspace = true
+
+[dev-dependencies]
+futures.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+[[example]]
+name = "blocking"
+required-features = ["blocking"]
+
+[package.metadata.docs.rs]
+all-features = true
