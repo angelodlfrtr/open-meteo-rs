@@ -19,6 +19,7 @@
 //! Enable the `blocking` feature for a synchronous [`blocking::Client`] with the same methods.
 
 #![deny(clippy::all, clippy::perf, clippy::complexity, clippy::pedantic)]
+#![deny(missing_docs)]
 
 #[cfg(feature = "blocking")]
 pub mod blocking;

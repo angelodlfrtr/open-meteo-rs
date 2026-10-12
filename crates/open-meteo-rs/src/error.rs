@@ -11,4 +11,5 @@ pub enum Error {
     Api(#[from] open_meteo_core::Error),
 }
 
+/// Shorthand for results of this crate's [`Error`].
 pub type Result<T> = core::result::Result<T, Error>;

@@ -27,6 +27,7 @@
 
 #![no_std]
 #![deny(clippy::all, clippy::perf, clippy::complexity, clippy::pedantic)]
+#![deny(missing_docs)]
 #![allow(clippy::module_name_repetitions)]
 
 extern crate alloc;

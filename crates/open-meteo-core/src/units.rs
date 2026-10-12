@@ -6,8 +6,11 @@ use core::fmt::{self, Display};
 use crate::ConversionError;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+/// Elevation passed to the API for statistical downscaling.
 pub enum Elevation {
+    /// Disable downscaling and use the grid cell's average elevation.
     Nan,
+    /// An explicit elevation in metres.
     Value(f32),
 }
 
@@ -47,8 +50,11 @@ impl From<f32> for Elevation {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Unit for temperature variables.
 pub enum TemperatureUnit {
+    /// Degrees Celsius, the API default.
     Celsius,
+    /// Degrees Fahrenheit.
     Fahrenheit,
 }
 
@@ -82,10 +88,15 @@ impl TryFrom<&str> for TemperatureUnit {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Unit for wind speed variables.
 pub enum WindSpeedUnit {
+    /// Kilometres per hour, the API default.
     Kmh,
+    /// Metres per second.
     Ms,
+    /// Miles per hour.
     Mph,
+    /// Knots.
     Kn,
 }
 
@@ -124,8 +135,11 @@ impl TryFrom<&str> for WindSpeedUnit {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Unit for precipitation variables.
 pub enum PrecipitationUnit {
+    /// Millimetres, the API default.
     Millimeters,
+    /// Inches.
     Inches,
 }
 
@@ -160,9 +174,13 @@ impl TryFrom<&str> for PrecipitationUnit {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// How the API picks the grid cell for a coordinate.
 pub enum CellSelection {
+    /// Prefer a land cell close to the coordinate. The default for most endpoints.
     Land,
+    /// Prefer a sea cell. The default for the marine endpoint.
     Sea,
+    /// Take the nearest cell regardless of its surface.
     Nearest,
 }
 
@@ -199,8 +217,11 @@ impl TryFrom<&str> for CellSelection {
 
 /// Length unit used by the marine endpoint.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Unit for lengths such as wave heights.
 pub enum LengthUnit {
+    /// Metres, the API default.
     Metric,
+    /// Feet.
     Imperial,
 }
 
@@ -238,6 +259,7 @@ impl TryFrom<&str> for LengthUnit {
 pub enum TemporalResolution {
     /// The native resolution of the underlying model.
     Native,
+    /// One value per hour.
     Hourly,
     /// One value every 3 hours.
     Hourly3,

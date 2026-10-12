@@ -19,7 +19,9 @@ use crate::Result;
 /// Synchronous Open-Meteo client.
 #[derive(Debug, Clone)]
 pub struct Client {
+    /// Base URL of every endpoint. Defaults to the public API.
     pub endpoints: Endpoints,
+    /// The `reqwest` client requests go through.
     pub http_client: reqwest::blocking::Client,
 }
 
@@ -38,6 +40,7 @@ impl Default for Client {
 }
 
 impl Client {
+    /// A client for the public API, with a 5 second timeout and this crate's user agent.
     #[must_use]
     pub fn new() -> Self {
         Self::default()

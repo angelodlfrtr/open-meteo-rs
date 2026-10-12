@@ -15,8 +15,10 @@ use crate::{
     TemperatureUnit, TimeStep, WindSpeedUnit,
 };
 
+/// Parameters of a seasonal forecast request.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Options {
+    /// Coordinates of the place to query.
     pub location: Location,
     /// Variables to return every 6 hours.
     pub six_hourly: Vec<String>,
@@ -28,24 +30,38 @@ pub struct Options {
     pub monthly: Vec<String>,
     /// Seasonal models, e.g. [`Model::EcmwfSeas5`] or [`Model::EcmwfEc46`].
     pub models: Vec<Model>,
+    /// Unit for temperatures. The API defaults to Celsius.
     pub temperature_unit: Option<TemperatureUnit>,
+    /// Unit for wind speeds. The API defaults to km/h.
     pub wind_speed_unit: Option<WindSpeedUnit>,
+    /// Unit for precipitation. The API defaults to millimetres.
     pub precipitation_unit: Option<PrecipitationUnit>,
+    /// IANA time zone name, or `auto` to derive it from the coordinates. Times in the result are local to it. The API defaults to UTC.
     pub time_zone: Option<String>,
+    /// Also return this many days before today.
     pub past_days: Option<u8>,
     /// Up to about 7 months. The API defaults to 6 months.
     pub forecast_days: Option<u16>,
+    /// First day of the requested range. Mutually exclusive with `past_days` and `forecast_days`.
     pub start_date: Option<NaiveDate>,
+    /// Last day of the requested range, inclusive.
     pub end_date: Option<NaiveDate>,
+    /// How to choose the grid cell for the coordinates. The API defaults to `land` on most endpoints.
     pub cell_selection: Option<CellSelection>,
+    /// API key for the commercial API. Not needed for the free tier.
     pub apikey: Option<String>,
 }
 
+/// Seasonal forecast data, one entry per requested resolution.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct SeasonalResult {
+    /// 6 hourly values, present when `six_hourly` variables were requested.
     pub six_hourly: Option<Vec<TimeStep>>,
+    /// Daily values, present when `daily` variables were requested.
     pub daily: Option<Vec<DateStep>>,
+    /// Weekly values, present when `weekly` variables were requested.
     pub weekly: Option<Vec<DateStep>>,
+    /// Monthly values, present when `monthly` variables were requested.
     pub monthly: Option<Vec<DateStep>>,
 }
 
