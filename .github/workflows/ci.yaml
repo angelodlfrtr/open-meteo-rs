@@ -20,3 +20,6 @@ jobs:
 
       - name: Run tests
         run: nix develop --command make test
+
+      - name: Check the core builds without std
+        run: nix develop --command make check-no-std
