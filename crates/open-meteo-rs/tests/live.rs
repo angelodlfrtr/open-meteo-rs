@@ -1,8 +1,11 @@
 //! Smoke tests against the public API. Ignored by default so CI stays offline;
 //! run them with `make test-live` (`cargo test -- --ignored`).
 
-use chrono::{Duration, Utc};
-use open_meteo_rs::{air_quality, forecast, geocoding, Client, Location};
+use chrono::{Duration, NaiveDate, Utc};
+use open_meteo_rs::{
+    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation,
+    Client, Location, Model,
+};
 
 fn berlin_forecast() -> forecast::Options {
     forecast::Options {
@@ -111,6 +114,120 @@ async fn api_errors_are_reported() {
         error,
         open_meteo_rs::Error::Api(open_meteo_core::Error::Api { status: 400, .. })
     ));
+}
+
+#[tokio::test]
+#[ignore = "talks to the public API"]
+async fn historical_forecast_and_previous_runs() {
+    let client = Client::new();
+    let today = Utc::now().date_naive();
+
+    let historical = forecast::Options {
+        hourly: vec!["temperature_2m".into()],
+        start_date: Some(today - Duration::days(10)),
+        end_date: Some(today - Duration::days(10)),
+        ..Default::default()
+    };
+    let result = client.historical_forecast(historical).await.unwrap();
+    assert_eq!(result.hourly.unwrap().len(), 24);
+
+    let previous = forecast::Options {
+        hourly: vec![
+            "temperature_2m".into(),
+            "temperature_2m_previous_day1".into(),
+        ],
+        forecast_days: Some(1),
+        ..Default::default()
+    };
+    let result = client.previous_runs(previous).await.unwrap();
+    let hourly = result.hourly.unwrap();
+    assert!(hourly[0]
+        .values
+        .contains_key("temperature_2m_previous_day1"));
+}
+
+#[tokio::test]
+#[ignore = "talks to the public API"]
+async fn marine() {
+    let options = marine::Options {
+        location: Location {
+            lat: 54.544_587,
+            lng: 10.227_487,
+        },
+        current: vec!["wave_height".into()],
+        hourly: vec!["wave_height".into()],
+        daily: vec!["wave_height_max".into()],
+        forecast_days: Some(1),
+        ..Default::default()
+    };
+
+    let result = Client::new().marine(options).await.unwrap();
+    assert!(result.current.is_some());
+    assert_eq!(result.hourly.unwrap().len(), 24);
+    assert_eq!(result.daily.unwrap().len(), 1);
+}
+
+#[tokio::test]
+#[ignore = "talks to the public API"]
+async fn ensemble() {
+    let options = ensemble::Options {
+        hourly: vec!["temperature_2m".into()],
+        models: vec![Model::IconSeamless],
+        forecast_days: Some(1),
+        ..Default::default()
+    };
+
+    let result = Client::new().ensemble(options).await.unwrap();
+    let hourly = result.hourly.unwrap();
+    assert_eq!(hourly.len(), 24);
+    assert!(hourly[0].values.contains_key("temperature_2m_member01"));
+}
+
+#[tokio::test]
+#[ignore = "talks to the public API"]
+async fn climate() {
+    let options = climate::Options {
+        start_date: NaiveDate::from_ymd_opt(2030, 1, 1).unwrap(),
+        end_date: NaiveDate::from_ymd_opt(2030, 1, 3).unwrap(),
+        models: vec![Model::MRIAGCM32S],
+        daily: vec!["temperature_2m_max".into()],
+        ..Default::default()
+    };
+
+    let result = Client::new().climate(options).await.unwrap();
+    assert_eq!(result.daily.unwrap().len(), 3);
+}
+
+#[tokio::test]
+#[ignore = "talks to the public API"]
+async fn flood() {
+    let options = flood::Options {
+        location: Location {
+            lat: 59.91,
+            lng: 10.75,
+        },
+        daily: vec!["river_discharge".into()],
+        forecast_days: Some(3),
+        ..Default::default()
+    };
+
+    let result = Client::new().flood(options).await.unwrap();
+    assert_eq!(result.daily.unwrap().len(), 3);
+}
+
+#[tokio::test]
+#[ignore = "talks to the public API"]
+async fn satellite_radiation() {
+    let options = satellite_radiation::Options {
+        hourly: vec!["shortwave_radiation".into()],
+        models: vec![Model::SatelliteRadiationSeamless],
+        past_days: Some(1),
+        forecast_days: Some(0),
+        ..Default::default()
+    };
+
+    let result = Client::new().satellite_radiation(options).await.unwrap();
+    assert_eq!(result.hourly.unwrap().len(), 24);
 }
 
 #[cfg(feature = "blocking")]

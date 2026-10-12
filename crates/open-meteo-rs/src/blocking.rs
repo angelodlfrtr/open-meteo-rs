@@ -8,7 +8,10 @@
 // without forcing a lifetime onto every future.
 #![allow(clippy::needless_pass_by_value)]
 
-use open_meteo_core::{air_quality, forecast, geocoding, Endpoints, Error as ApiError, Request};
+use open_meteo_core::{
+    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation,
+    Endpoints, Error as ApiError, Request,
+};
 
 use crate::client::{DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_USER_AGENT};
 use crate::Result;
@@ -118,5 +121,71 @@ impl Client {
     /// See [`Client::send`].
     pub fn geocoding_get(&self, opts: geocoding::GetOptions) -> Result<geocoding::GeocodingResult> {
         self.send(&self.endpoints.geocoding_get, &opts)
+    }
+
+    /// Past forecasts as they were issued, stitched into one series. From 2022 onwards.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub fn historical_forecast(&self, opts: forecast::Options) -> Result<forecast::ForecastResult> {
+        self.send(&self.endpoints.historical_forecast, &opts)
+    }
+
+    /// Earlier runs of a model, as `<variable>_previous_dayN` columns, to study forecast skill.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub fn previous_runs(&self, opts: forecast::Options) -> Result<forecast::ForecastResult> {
+        self.send(&self.endpoints.previous_runs, &opts)
+    }
+
+    /// Marine weather: waves, swell and ocean currents.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub fn marine(&self, opts: marine::Options) -> Result<marine::MarineResult> {
+        self.send(&self.endpoints.marine, &opts)
+    }
+
+    /// Every member of an ensemble model run.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub fn ensemble(&self, opts: ensemble::Options) -> Result<ensemble::EnsembleResult> {
+        self.send(&self.endpoints.ensemble, &opts)
+    }
+
+    /// Climate projections from 1950 to 2050.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub fn climate(&self, opts: climate::Options) -> Result<climate::ClimateResult> {
+        self.send(&self.endpoints.climate, &opts)
+    }
+
+    /// River discharge forecasts.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub fn flood(&self, opts: flood::Options) -> Result<flood::FloodResult> {
+        self.send(&self.endpoints.flood, &opts)
+    }
+
+    /// Solar radiation measured by satellites.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub fn satellite_radiation(
+        &self,
+        opts: satellite_radiation::Options,
+    ) -> Result<satellite_radiation::SatelliteRadiationResult> {
+        self.send(&self.endpoints.satellite_radiation, &opts)
     }
 }

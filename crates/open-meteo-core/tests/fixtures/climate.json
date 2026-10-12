@@ -1,0 +1,31 @@
+{
+  "latitude": 52.5,
+  "longitude": 13.400009,
+  "generationtime_ms": 4.577279090881348,
+  "utc_offset_seconds": 0,
+  "timezone": "GMT",
+  "timezone_abbreviation": "GMT",
+  "elevation": 38.0,
+  "daily_units": {
+    "time": "unixtime",
+    "temperature_2m_max_MRI_AGCM3_2_S": "°C",
+    "temperature_2m_max_EC_Earth3P_HR": "°C"
+  },
+  "daily": {
+    "time": [
+      1893456000,
+      1893542400,
+      1893628800
+    ],
+    "temperature_2m_max_MRI_AGCM3_2_S": [
+      2.2,
+      3.2,
+      7.8
+    ],
+    "temperature_2m_max_EC_Earth3P_HR": [
+      1.7,
+      2.0,
+      0.3
+    ]
+  }
+}

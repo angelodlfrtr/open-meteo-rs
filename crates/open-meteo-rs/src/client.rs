@@ -1,6 +1,9 @@
 use std::time::Duration;
 
-use open_meteo_core::{air_quality, forecast, geocoding, Endpoints, Error as ApiError, Request};
+use open_meteo_core::{
+    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation,
+    Endpoints, Error as ApiError, Request,
+};
 
 use crate::Result;
 
@@ -130,6 +133,75 @@ impl Client {
         opts: geocoding::GetOptions,
     ) -> Result<geocoding::GeocodingResult> {
         self.send(&self.endpoints.geocoding_get, &opts).await
+    }
+
+    /// Past forecasts as they were issued, stitched into one series. From 2022 onwards.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn historical_forecast(
+        &self,
+        opts: forecast::Options,
+    ) -> Result<forecast::ForecastResult> {
+        self.send(&self.endpoints.historical_forecast, &opts).await
+    }
+
+    /// Earlier runs of a model, as `<variable>_previous_dayN` columns, to study forecast skill.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn previous_runs(&self, opts: forecast::Options) -> Result<forecast::ForecastResult> {
+        self.send(&self.endpoints.previous_runs, &opts).await
+    }
+
+    /// Marine weather: waves, swell and ocean currents.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn marine(&self, opts: marine::Options) -> Result<marine::MarineResult> {
+        self.send(&self.endpoints.marine, &opts).await
+    }
+
+    /// Every member of an ensemble model run.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn ensemble(&self, opts: ensemble::Options) -> Result<ensemble::EnsembleResult> {
+        self.send(&self.endpoints.ensemble, &opts).await
+    }
+
+    /// Climate projections from 1950 to 2050.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn climate(&self, opts: climate::Options) -> Result<climate::ClimateResult> {
+        self.send(&self.endpoints.climate, &opts).await
+    }
+
+    /// River discharge forecasts.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn flood(&self, opts: flood::Options) -> Result<flood::FloodResult> {
+        self.send(&self.endpoints.flood, &opts).await
+    }
+
+    /// Solar radiation measured by satellites.
+    ///
+    /// # Errors
+    ///
+    /// See [`Client::send`].
+    pub async fn satellite_radiation(
+        &self,
+        opts: satellite_radiation::Options,
+    ) -> Result<satellite_radiation::SatelliteRadiationResult> {
+        self.send(&self.endpoints.satellite_radiation, &opts).await
     }
 }
 

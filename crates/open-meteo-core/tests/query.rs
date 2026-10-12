@@ -1,7 +1,10 @@
 //! The exact URLs each request produces.
 
 use chrono::NaiveDate;
-use open_meteo_core::{air_quality, forecast, geocoding, url, Endpoints, Location, Model};
+use open_meteo_core::{
+    air_quality, climate, ensemble, flood, forecast, geocoding, marine, satellite_radiation, url,
+    CellSelection, Endpoints, LengthUnit, Location, Model, TemporalResolution,
+};
 
 fn date(y: i32, m: u32, d: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(y, m, d).unwrap()
@@ -104,5 +107,111 @@ fn geocoding_search_and_get() {
     assert_eq!(
         url(&Endpoints::default().geocoding_get, &get),
         "https://geocoding-api.open-meteo.com/v1/get?id=2950159"
+    );
+}
+
+#[test]
+fn marine() {
+    let options = marine::Options {
+        current: vec!["wave_height".into()],
+        hourly: vec!["wave_height".into(), "wave_direction".into()],
+        daily: vec!["wave_height_max".into()],
+        length_unit: Some(LengthUnit::Imperial),
+        forecast_days: Some(1),
+        cell_selection: Some(CellSelection::Nearest),
+        ..Default::default()
+    };
+
+    assert_eq!(
+        url(&Endpoints::default().marine, &options),
+        "https://marine-api.open-meteo.com/v1/marine\
+         ?latitude=52.52&longitude=13.41&timeformat=unixtime&current=wave_height\
+         &hourly=wave_height,wave_direction&daily=wave_height_max&length_unit=imperial\
+         &forecast_days=1&cell_selection=nearest"
+    );
+}
+
+#[test]
+fn ensemble() {
+    let options = ensemble::Options {
+        hourly: vec!["temperature_2m".into()],
+        models: vec![Model::IconSeamless, Model::GfsSeamless],
+        forecast_days: Some(2),
+        start_hour: Some(date(2024, 6, 1).and_hms_opt(0, 0, 0).unwrap()),
+        ..Default::default()
+    };
+
+    assert_eq!(
+        url(&Endpoints::default().ensemble, &options),
+        "https://ensemble-api.open-meteo.com/v1/ensemble\
+         ?latitude=52.52&longitude=13.41&timeformat=unixtime&hourly=temperature_2m\
+         &models=icon_seamless,gfs_seamless&forecast_days=2&start_hour=2024-06-01T00:00"
+    );
+}
+
+#[test]
+fn climate() {
+    let options = climate::Options {
+        start_date: date(2030, 1, 1),
+        end_date: date(2030, 1, 3),
+        models: vec![Model::MRIAGCM32S, Model::ECEarth3pHR],
+        daily: vec!["temperature_2m_max".into()],
+        disable_bias_correction: true,
+        ..Default::default()
+    };
+
+    assert_eq!(
+        url(&Endpoints::default().climate, &options),
+        "https://climate-api.open-meteo.com/v1/climate\
+         ?latitude=52.52&longitude=13.41&timeformat=unixtime&start_date=2030-01-01\
+         &end_date=2030-01-03&models=MRI_AGCM3_2_S,EC_Earth3P_HR&daily=temperature_2m_max\
+         &disable_bias_correction=true"
+    );
+}
+
+#[test]
+fn flood() {
+    let options = flood::Options {
+        location: Location {
+            lat: 59.91,
+            lng: 10.75,
+        },
+        daily: vec!["river_discharge".into()],
+        forecast_days: Some(3),
+        ensemble: true,
+        ..Default::default()
+    };
+
+    assert_eq!(
+        url(&Endpoints::default().flood, &options),
+        "https://flood-api.open-meteo.com/v1/flood\
+         ?latitude=59.91&longitude=10.75&timeformat=unixtime&daily=river_discharge\
+         &forecast_days=3&ensemble=true"
+    );
+}
+
+#[test]
+fn satellite_radiation() {
+    let options = satellite_radiation::Options {
+        hourly: vec![
+            "shortwave_radiation".into(),
+            "global_tilted_irradiance".into(),
+        ],
+        models: vec![Model::SatelliteRadiationSeamless],
+        temporal_resolution: Some(TemporalResolution::Native),
+        tilt: Some(35.0),
+        azimuth: Some(-10.0),
+        past_days: Some(1),
+        forecast_days: Some(0),
+        ..Default::default()
+    };
+
+    assert_eq!(
+        url(&Endpoints::default().satellite_radiation, &options),
+        "https://satellite-api.open-meteo.com/v1/archive\
+         ?latitude=52.52&longitude=13.41&timeformat=unixtime\
+         &hourly=shortwave_radiation,global_tilted_irradiance\
+         &models=satellite_radiation_seamless&temporal_resolution=native&tilt=35&azimuth=-10\
+         &past_days=1&forecast_days=0"
     );
 }
