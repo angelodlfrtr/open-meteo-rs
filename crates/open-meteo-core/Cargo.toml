@@ -1,0 +1,17 @@
+[package]
+name = "open-meteo-core"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license-file.workspace = true
+readme = "README.md"
+repository.workspace = true
+rust-version.workspace = true
+description = "Request building and response parsing for the open-meteo.com API, without I/O (no_std + alloc)"
+
+[dependencies]
+chrono = { workspace = true, features = ["alloc", "serde"] }
+percent-encoding.workspace = true
+serde = { workspace = true, features = ["alloc", "derive"] }
+serde_json = { workspace = true, features = ["alloc"] }
+thiserror.workspace = true

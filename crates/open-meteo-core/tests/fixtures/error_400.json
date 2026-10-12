@@ -1,0 +1,4 @@
+{
+  "reason": "Latitude must be in range of -90 to 90°. Given: 999.0.",
+  "error": true
+}

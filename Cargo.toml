@@ -14,8 +14,9 @@ rust-version = "1.81"
 chrono = { version = "0.4.31", default-features = false }
 chrono-tz = "0.8.2"
 futures = "0.3.25"
+percent-encoding = { version = "2.3", default-features = false, features = ["alloc"] }
 reqwest = { version = "0.11.14", features = ["json"] }
 serde = { version = "1.0", default-features = false }
 serde_json = { version = "1.0.91", default-features = false }
-snafu = "0.7.4"
+thiserror = { version = "2.0", default-features = false }
 tokio = { version = "1.24.2", default-features = false }
