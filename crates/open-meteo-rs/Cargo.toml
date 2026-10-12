@@ -15,15 +15,15 @@ default = []
 blocking = ["reqwest/blocking"]
 
 [dependencies]
-chrono = { workspace = true, features = ["std", "clock", "serde"] }
-chrono-tz.workspace = true
+open-meteo-core = { version = "0.2.0", path = "../open-meteo-core" }
 reqwest.workspace = true
-serde = { workspace = true, features = ["std", "derive"] }
-serde_json = { workspace = true, features = ["std"] }
-snafu.workspace = true
+thiserror = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
+chrono = { workspace = true, features = ["std", "clock"] }
+chrono-tz.workspace = true
 futures.workspace = true
+open-meteo-core = { path = "../open-meteo-core" }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
 [[example]]
