@@ -131,6 +131,9 @@ mod tests {
             .list("daily", &[] as &[&str])
             .param("name", "Saint Étienne");
 
+        assert_eq!(query.pairs().len(), 7);
+        assert_eq!(query.pairs()[0], ("latitude", "52.52".to_string()));
+
         assert_eq!(
             query.to_string(),
             "latitude=52.52&longitude=13.41&timeformat=unixtime&timezone=Europe/Paris\
