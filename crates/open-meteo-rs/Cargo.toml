@@ -3,6 +3,7 @@ name = "open-meteo-rs"
 version.workspace = true
 edition.workspace = true
 homepage.workspace = true
+license.workspace = true
 license-file.workspace = true
 readme = "../../README.md"
 repository.workspace = true
@@ -23,7 +24,6 @@ thiserror = { workspace = true, features = ["std"] }
 chrono = { workspace = true, features = ["std", "clock"] }
 chrono-tz.workspace = true
 futures.workspace = true
-open-meteo-core = { path = "../open-meteo-core" }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
 [[example]]
